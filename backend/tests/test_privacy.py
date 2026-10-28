@@ -52,8 +52,15 @@ def test_using_the_app_makes_no_outbound_connections(tmp_path, no_network):
             "kind": "income", "name": "Pay", "amount_cents": 1000, "account_id": account["id"],
             "frequency": "weekly", "start_date": "2026-11-01",
         })
+        task = client.post("/api/tasks", json={
+            "title": "Water the plants", "due_date": "2026-11-20", "reminders": ["2026-11-20T08:00"],
+        }).json()
+        client.post(f"/api/tasks/{task['id']}/move", json={"status": "in_progress"})
+        client.post("/api/labels", json={"name": "garden"})
+        client.post("/api/lists", json={"name": "Chores"})
         for path in ("/api/health", "/api/accounts", "/api/rules", "/api/cashflow",
-                     "/api/calendar", "/api/reviews"):
+                     "/api/calendar", "/api/reviews", "/api/tasks", "/api/today",
+                     "/api/labels", "/api/lists", "/api/reminders/due"):
             assert client.get(path).status_code == 200
     assert no_network == []
 

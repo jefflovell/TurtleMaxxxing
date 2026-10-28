@@ -262,12 +262,18 @@ There's no reliable current market-share data for calendars, so this is ranked b
 - ⬜ First-user UAT: enter real bills and paychecks, use it for a couple of weeks, and collect feedback.
 
 **M2 — Tasks, reminders and projects** (§2b)
+
+*M2a, done:*
+- ✅ Tasks with kanban status (To Do / In Progress / Blocked / Done), due dates and times, and reminders (in-app pop-ups with snooze).
+- ✅ User-defined labels (name, color, emoji) with ⭐ favorites, plus auto-Private labels.
+- ✅ Views: Today / Upcoming (home screen), list with status, label and search filters, and a kanban board with drag-and-drop.
+- ✅ Lists for grouping tasks into projects (plus an Inbox).
+- ✅ 🔒 Private flag, with one tested rule (`is_private`) for M3's AI gate to use.
+
+*M2b, next:*
+- Tasks on the calendar view (alongside bills).
+- Saved filters pinned in the sidebar.
 - CSV import (moved from M1): match bank or card transactions to expected entries.
-- Tasks with kanban status (To Do / In Progress / Blocked / Done), due dates and reminders.
-- User-defined labels (name, color, emoji) with ⭐ favorites, plus optional auto-Private labels.
-- Views: Today / Upcoming (home screen), list with filters, kanban board, calendar, and saved filters.
-- Spaces and lists for grouping tasks into projects.
-- 🔒 Private flag on items.
 - Contacts list (e.g. "Mr. Anderson → Smith Agency") so the AI can fill in who and where for appointments.
 
 **M3 — AI via MCP**

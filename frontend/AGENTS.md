@@ -15,8 +15,9 @@ React 19, TypeScript, Vite and Recharts. Plain CSS with theme tokens (no CSS fra
 | `src/lib/types.ts` | Data shapes, matching `backend/turtlemaxxxing/budget/api.py`. |
 | `src/lib/format.ts` | Money (cents ↔ dollars), dates, labels for frequencies and account types. |
 | `src/index.css` | Theme tokens (light and dark) and all styles. Change colors here. |
-| `src/pages/*.tsx` | One file per screen: Cash flow, Bills calendar, Review inbox, Money rules, Accounts. |
-| `src/components/*.tsx` | Shared pieces: month picker, rule form (with splits), status chip, empty state. |
+| `src/pages/*.tsx` | One file per screen. Plan: Today (home), Tasks (list and board), Labels. Money: Cash flow, Bills calendar, Review inbox, Money rules, Accounts. |
+| `src/components/*.tsx` | Shared pieces: task editor, task row, quick add, label chips and picker (`TaskBits.tsx`), reminder pop-ups, month picker, rule form, status chip, empty state. |
+| `src/lib/tasks.ts` | Task status names and icons. |
 
 ## Common changes
 
@@ -30,6 +31,9 @@ React 19, TypeScript, Vite and Recharts. Plain CSS with theme tokens (no CSS fra
 - **No external network requests:** no CDN fonts, analytics, or remote images. Everything is bundled.
 - Status and meaning are never shown by color alone. Pair color with an icon or word (see `StatusChip.tsx`).
 - Money is integer cents in all API calls. Convert only for display (`money()`) and input (`toCents()`).
+- Show 🔒 for any task where `is_private` is true. Never decide privacy in the UI; the backend's `is_private` is the source of truth.
+- Label colors come from `--label-*` tokens in `index.css` (a color-blind-safe palette). Labels show a colored dot, and their text stays in normal text color.
+- Board drag-and-drop uses the browser's native drag events. Keyboard and touch users change status in the task editor instead.
 
 ## Check your work
 ```bash

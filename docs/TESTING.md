@@ -31,8 +31,11 @@ This is a **standard operating procedure.** It applies to every change, whether 
 | Auto-posting **never double-counts** | `tests/test_budget_api.py::test_auto_posting_is_idempotent`, `::test_rule_dates_before_the_opening_balance_are_not_double_counted` |
 | **Editing a rule changes the future, never the past** | `tests/test_budget_api.py::test_rule_edits_change_the_future_not_the_past` |
 | **Check-ins and subscription reviews** do what they say | `tests/test_budget_api.py::test_balance_checkin_creates_adjustment`, `::test_subscription_review_keep_cancel_and_change_price` |
+| **A task is Private** if flagged Private **or** tagged with an auto-Private label, and turning auto-Private on applies to existing tasks immediately | `tests/test_tasks_api.py::test_private_flag_makes_a_task_private`, `::test_auto_private_label_makes_tagged_tasks_private`, `::test_turning_on_auto_private_applies_to_existing_tasks` |
+| **Upgrades keep your data** and back up the old database first | `tests/test_migrations.py::test_upgrade_from_v1_keeps_data_and_backs_up` |
+| **Reminders** fire on time, snooze and dismiss, and never nag about finished tasks | `tests/test_tasks_api.py::test_reminders_fire_dismiss_and_snooze`, `::test_done_tasks_do_not_remind` |
 
-*Coming with later milestones (from [the separation test](testing/SEPARATION_TEST.md)):* Private items never reach any AI path or MCP tool (M3), blocked file types are refused (M3), and the work-account warning (M4). Each lands with its tests in the same milestone, or it doesn't land.
+*Coming with later milestones (from [the separation test](testing/SEPARATION_TEST.md)):* Private items never reach any AI path or MCP tool (M3, built on the `is_private` rule tested above), blocked file types are refused (M3), and the work-account warning (M4). Each lands with its tests in the same milestone, or it doesn't land.
 
 ## 3. Test layers
 
@@ -108,7 +111,8 @@ Real examples, kept to show the process works and why the rules exist:
 ## 8. Known gaps (honest list)
 
 - **No automated frontend tests yet.** The UI is checked by type-checking, the build, and manual walkthroughs. Planned: component tests for money input and forms.
-- **Migrations:** only one schema version exists, so upgrade paths aren't tested yet. The first new migration must come with an upgrade test (old database → new).
+- **Migrations:** the upgrade from v1 → current is tested. Each new migration should extend `test_migrations.py` with data that touches its tables.
+- **Board drag-and-drop** is checked manually. In-page drag events were verified in the walkthrough, but there's no automated UI test yet.
 - **Time zones:** "today" is the computer's local date. Travel across time zones isn't tested.
 - **The separation test is manual** and depends on each person's machine.
 

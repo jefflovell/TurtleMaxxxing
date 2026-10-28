@@ -86,3 +86,67 @@ export interface Review {
   amount_cents?: number
   frequency?: Frequency
 }
+
+// ---------------------------------------------------------------- tasks
+// Shapes from backend/turtlemaxxxing/tasks/api.py.
+
+export type TaskStatus = 'todo' | 'in_progress' | 'blocked' | 'done'
+export type LabelColor =
+  | 'red' | 'orange' | 'yellow' | 'green' | 'aqua' | 'blue' | 'violet' | 'magenta' | 'slate'
+
+export interface Label {
+  id: number
+  name: string
+  color: LabelColor
+  emoji: string | null
+  favorite: boolean
+  auto_private: boolean
+  position: number
+}
+
+export interface TaskList {
+  id: number
+  name: string
+  emoji: string | null
+  archived: boolean
+  open_count: number
+}
+
+export interface Reminder {
+  id: number
+  remind_at: string
+  dismissed: boolean
+}
+
+export interface Task {
+  id: number
+  list_id: number | null
+  title: string
+  notes: string
+  status: TaskStatus
+  blocked_note: string | null
+  due_date: string | null
+  due_time: string | null
+  private: boolean
+  /** True if flagged Private or tagged with an auto-Private label. Never shared with AI. */
+  is_private: boolean
+  position: number
+  completed_at: string | null
+  labels: Label[]
+  reminders: Reminder[]
+}
+
+export interface TodayView {
+  today: string
+  overdue: Task[]
+  due_today: Task[]
+  upcoming: Task[]
+  no_date_count: number
+  done_today_count: number
+}
+
+export interface DueReminder {
+  reminder_id: number
+  remind_at: string
+  task: Task
+}
