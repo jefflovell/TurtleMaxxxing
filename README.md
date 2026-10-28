@@ -1,3 +1,5 @@
 # TurtleMaxxxing
 
-Hello, world! 🐢
+![A pixel-art turtle](assets/turtle.png)
+
+Hello, world! 🐢 I like turtles.
