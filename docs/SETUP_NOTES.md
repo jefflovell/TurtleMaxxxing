@@ -17,8 +17,48 @@ Raw notes for building `INSTALL.md` and `SETUP_PROMPT.md`. Add an entry **whenev
 | Item | Why | Verify | Notes |
 |---|---|---|---|
 | Git | Clone and update the repo | `git --version` | |
-| Python 3 | Runs the backend | `python --version` | Exact minimum version gets pinned in M1 |
-| Node.js (LTS) | Builds the React frontend | `node --version` | Decided 2026-10-28 (React). Exact version gets pinned in M1 |
+| uv | Installs Python (if needed) and the backend's dependencies, and runs the app | `uv --version` | Developed with 0.13.6. One installer, no separate Python install needed. |
+| Python ≥ 3.12 | Runs the backend | `uv run python --version` | Provided by uv if missing. Developed on 3.15. |
+| Node.js (LTS) | Builds the React frontend | `node --version` | Developed on v24. Only needed to build the UI, not to run the app. |
+
+## Install and run (M1)
+
+From the repo root:
+
+| Step | Command | Verify |
+|---|---|---|
+| Backend dependencies | `uv sync --directory backend` | No errors; creates `backend/.venv` |
+| Frontend dependencies | `npm install --prefix frontend` | No errors |
+| Build the UI | `npm run build --prefix frontend` | Ends with `built in ...`; creates `frontend/dist` |
+| Start | `uv run --directory backend turtlemaxxxing` | Prints the turtle; http://127.0.0.1:8765 loads |
+| Self-check | `uv run --directory backend pytest -q` | All tests pass, including `test_privacy.py` (no network) |
+
+## Runtime facts
+
+| Thing | Value | Override |
+|---|---|---|
+| Address | `http://turtle.localhost:8765`, bound to `127.0.0.1` only | `settings.json` in the data folder (`--find-port`, `--hostname`), or `TURTLE_PORT` / `TURTLE_HOSTNAME`. The bind address is fixed. |
+| Data folder | `%LOCALAPPDATA%\TurtleMaxxxing` (Windows), `~/.local/share/turtlemaxxxing` (others) | `TURTLE_DATA_DIR` |
+| Database | `<data folder>\turtle.db` (SQLite, one file = all your data) | — |
+| Backups | `<data folder>\backups\`, written automatically before each migration | — |
+| Lockfiles | `backend/uv.lock`, `frontend/package-lock.json`, committed so installs are reproducible | — |
+
+## Friendly address ("I like turtles")
+
+The setup prompt should:
+1. Run `uv run --directory backend turtlemaxxxing --find-port`, which scans 8765–8799 (skipping common dev ports) and saves the first free one.
+2. Offer a custom name, e.g. `--hostname i-like-turtles.localhost`. It must end in `.localhost`: browsers send those to this computer with **no hosts-file edit and no admin rights**, and the app refuses anything else.
+3. Create a browser **bookmark named "I like turtles 🐢"** pointing to the saved address. Typing "I like turtles" in the address bar then suggests it. *(Chrome and Edge match bookmark titles; it shows as a suggestion, and isn't guaranteed to be the top pick over a web search.)*
+4. Create a **Start-menu shortcut named "I like turtles"** that starts the app and opens the address. Typing "I like turtles" in Windows search then launches it reliably.
+
+Not done, on purpose:
+- **Editing the hosts file** for a bare name like `turtles/`: needs admin rights and changes a system file. Not worth the risk for a nicer URL.
+- **Port 80** (to drop `:8765`): often taken (IIS and other tools), and grabbing it silently would surprise people.
+- **Hijacking address-bar search** for the exact phrase: needs a browser extension or a search-engine change. Out of scope.
+
+## Not yet decided (for the setup prompt)
+- How the app starts day to day: a desktop shortcut, a start-menu entry, or start at login. TBD with the first user.
+- Whether to ship a prebuilt `frontend/dist` so users don't need Node at all.
 
 ## Repo
 
@@ -35,3 +75,10 @@ Raw notes for building `INSTALL.md` and `SETUP_PROMPT.md`. Add an entry **whenev
 
 - **2026-10-28:** Repo created. No runtime dependencies yet beyond Python (for `hello.py`).
 - **2026-10-28:** M0 security docs added. The setup prompt should end by pointing the user to `docs/SECURITY.md` and running separation tests T1–T4. The planned app data folder is `%LOCALAPPDATA%\TurtleMaxxxing` (to confirm in M1). It must stay outside any AI tool's shared folders.
+- **2026-10-28 (M1):**
+  - Backend added: FastAPI, uvicorn, SQLite, managed with uv. Data folder confirmed as `%LOCALAPPDATA%\TurtleMaxxxing`.
+  - Frontend added: React 19, Vite, TypeScript and Recharts. The backend serves `frontend/dist`, so the UI must be built once after install and after each update.
+  - Note: FastAPI pulls in `opentelemetry-api`. That's the API only, with no exporter, so it sends nothing; `test_privacy.py` confirms there are no outbound connections.
+  - The `turtle-help` skill and `docs/troubleshooting/` are added. The setup prompt should mention both at the end ("if anything goes wrong, open this folder in Claude Code and say *help*").
+  - Friendly address `turtle.localhost`, `settings.json`, `--find-port` / `--hostname` / `--demo` added. A host and origin guard protects against malicious websites (DNS rebinding, CSRF).
+  - The testing SOP is published at `docs/TESTING.md`. The setup prompt's self-check should run the full test suite and name the privacy tests in its summary.

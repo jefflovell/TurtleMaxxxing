@@ -246,17 +246,21 @@ There's no reliable current market-share data for calendars, so this is ranked b
 - ⬜ Turn on GitHub private vulnerability reporting for the repo (repo owner, in Settings → Security).
 
 **M1 — App shell + budget (P1)** 🎯
-- FastAPI, SQLite and the web UI running on `localhost`.
-- Accounts and buckets with running balances.
-- Recurring rules: income with splits, bills, subscriptions (§2a).
-- Auto-posting of expected entries, with confirm/edit.
-- Monthly cash-flow chart: running balance across the month, bills marked on their dates.
-- "Pay on this date" bills calendar with paid/unpaid toggles.
-- Review inbox: balance check-ins and "still paying for this?" subscription reviews.
-- CSV import that matches transactions to expected entries, at the end of M1 (can slip to M2).
-- `AGENTS.md`, module guides, the first `turtle-help` skill actions (troubleshoot, update, undo) and the first troubleshooting guides (§8a).
+- ✅ FastAPI, SQLite and the web UI running on `localhost`.
+- ✅ Accounts and buckets with running balances.
+- ✅ Recurring rules: income with splits, bills, subscriptions (§2a).
+- ✅ Auto-posting of expected entries, with confirm.
+- ✅ Monthly cash-flow chart: running balance across the month, bills marked on their dates.
+- ✅ "Pay on this date" bills calendar with mark-paid.
+- ✅ Review inbox: balance check-ins (scheduled, plus "check balance now") and "still paying for this?" subscription reviews.
+- ✅ `AGENTS.md`, module guides, the `turtle-help` skill (troubleshoot, change, update, undo) and the first troubleshooting guides (§8a).
+- ✅ Automated tests, including **T5 no network by default** (`backend/tests/test_privacy.py`).
+- ➡️ **Moved to M2:** CSV import that matches transactions to expected entries.
+- ⬜ First version of `docs/SETUP_PROMPT.md`, tested on a clean Windows user account.
+- ⬜ First-user UAT: enter real bills and paychecks, use it for a couple of weeks, and collect feedback.
 
 **M2 — Tasks, reminders and projects** (§2b)
+- CSV import (moved from M1): match bank or card transactions to expected entries.
 - Tasks with kanban status (To Do / In Progress / Blocked / Done), due dates and reminders.
 - User-defined labels (name, color, emoji) with ⭐ favorites, plus optional auto-Private labels.
 - Views: Today / Upcoming (home screen), list with filters, kanban board, calendar, and saved filters.

@@ -1,0 +1,37 @@
+# Frontend guide
+
+React 19, TypeScript, Vite and Recharts. Plain CSS with theme tokens (no CSS framework).
+
+## How it runs
+- **Normal use:** `npm run build` writes `dist/`, and the Python backend serves it at http://127.0.0.1:8765. **After any UI change, rebuild**, or the app keeps showing the old version.
+- **While developing:** start the backend, then `npm run dev` and open http://127.0.0.1:5173 (live reload; `/api` is forwarded to the backend).
+
+## Files
+
+| File | What it does |
+|---|---|
+| `src/App.tsx` | Layout, sidebar navigation, shared data (accounts, rules, review count). `refresh()` reloads everything after a change. |
+| `src/lib/api.ts` | **The only place that calls the backend.** Every call goes to `/api` on this computer. |
+| `src/lib/types.ts` | Data shapes, matching `backend/turtlemaxxxing/budget/api.py`. |
+| `src/lib/format.ts` | Money (cents ↔ dollars), dates, labels for frequencies and account types. |
+| `src/index.css` | Theme tokens (light and dark) and all styles. Change colors here. |
+| `src/pages/*.tsx` | One file per screen: Cash flow, Bills calendar, Review inbox, Money rules, Accounts. |
+| `src/components/*.tsx` | Shared pieces: month picker, rule form (with splits), status chip, empty state. |
+
+## Common changes
+
+**Change colors or the look:** edit the tokens at the top of `src/index.css`. Dark mode has its own block below. Chart colors (`--series-1`, status colors) come from a color-blind-safe palette, so keep them unless you know why you're changing them.
+
+**Add a field to a form:** add it to the backend model first (see `backend/turtlemaxxxing/budget/AGENTS.md`), then to `types.ts`, then to the form in `pages/` or `components/RuleForm.tsx`.
+
+**Add a page:** create `src/pages/NewPage.tsx` taking `PageProps`, then add it to `NAV` and the page switch in `App.tsx`.
+
+## Rules
+- **No external network requests:** no CDN fonts, analytics, or remote images. Everything is bundled.
+- Status and meaning are never shown by color alone. Pair color with an icon or word (see `StatusChip.tsx`).
+- Money is integer cents in all API calls. Convert only for display (`money()`) and input (`toCents()`).
+
+## Check your work
+```bash
+npm run build    # type-checks and builds; must pass with no errors
+```

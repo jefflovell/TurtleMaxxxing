@@ -1,0 +1,102 @@
+# Testing SOP 🐢🧪
+
+**Why this is public:** TurtleMaxxxing asks you to trust it with your money data and to keep work and personal life apart. Promises are cheap, so we publish *how* we check them. Every privacy and security promise in [SECURITY.md](SECURITY.md) maps to an automated test you can run yourself.
+
+This is a **standard operating procedure.** It applies to every change, whether a person or an AI agent makes it. AI agents: this file is binding, and `AGENTS.md` and `CLAUDE.md` point here for that reason.
+
+---
+
+## 1. Ground rules
+
+1. **Tests are the contract.** If a test protects a promise in `SECURITY.md` or `PLAN.md` §3, never weaken, skip or delete it to make a change pass. Fix the change instead. If a promise genuinely changes, update `SECURITY.md` in the same commit and explain why.
+2. **Fictional data only.** Tests, demos, screenshots and bug reports use made-up names and amounts ("Kid A 529", "Streaming $15.99"). Never real accounts, names, employers or addresses.
+3. **Never touch real data.** Tests run against a temporary data folder (`TURTLE_DATA_DIR` is set by `tests/conftest.py`). Manual testing uses `--demo`, which runs on a throwaway folder that's deleted on exit.
+4. **No network in tests.** Tests talk to the app in memory. Nothing in the test suite may contact the internet.
+5. **Every bug gets a regression test** that fails before the fix and passes after it.
+6. **Report honestly.** If tests fail, say so and show the output. If something wasn't tested, say that too. "It should work" isn't a test result.
+
+## 2. Promise → test map
+
+| Promise | Where it's checked |
+|---|---|
+| The app makes **no outbound connections**; using every screen's API triggers no non-localhost connection or DNS lookup | `tests/test_privacy.py::test_using_the_app_makes_no_outbound_connections` |
+| The server **only listens on 127.0.0.1** | `tests/test_privacy.py::test_server_listens_on_localhost_only` |
+| Your **data lives outside the repo** | `tests/test_privacy.py::test_default_data_folder_is_outside_the_repo` |
+| **Other websites can't read your data** (DNS rebinding blocked; only our own host names answered) | `tests/test_local_security.py::test_refuses_other_host_names_dns_rebinding` |
+| **Other websites can't change your data** (cross-site requests refused) | `tests/test_local_security.py::test_cross_site_changes_are_refused`, `::test_cross_site_fetch_metadata_is_refused` |
+| **No CORS**, so other sites can't read responses | `tests/test_local_security.py::test_no_cors_headers_so_other_sites_cannot_read` |
+| The friendly address **can never be a real internet name** (only `*.localhost`) | `tests/test_config_and_cli.py::test_rejected_hostnames_can_never_claim_a_real_internet_name` |
+| Bad settings **fail loudly** instead of silently opening up | `tests/test_config_and_cli.py::test_bad_settings_fail_loudly` |
+| **Paycheck splits** update every account automatically | `tests/test_budget_api.py::test_paycheck_splits_auto_post_and_update_balances` |
+| Auto-posting **never double-counts** | `tests/test_budget_api.py::test_auto_posting_is_idempotent`, `::test_rule_dates_before_the_opening_balance_are_not_double_counted` |
+| **Editing a rule changes the future, never the past** | `tests/test_budget_api.py::test_rule_edits_change_the_future_not_the_past` |
+| **Check-ins and subscription reviews** do what they say | `tests/test_budget_api.py::test_balance_checkin_creates_adjustment`, `::test_subscription_review_keep_cancel_and_change_price` |
+
+*Coming with later milestones (from [the separation test](testing/SEPARATION_TEST.md)):* Private items never reach any AI path or MCP tool (M3), blocked file types are refused (M3), and the work-account warning (M4). Each lands with its tests in the same milestone, or it doesn't land.
+
+## 3. Test layers
+
+| Layer | What | Files |
+|---|---|---|
+| **Unit** | Pure logic with no database, e.g. which dates a schedule hits, including month ends and leap years | `test_schedule.py` |
+| **End-to-end API** | The real app with a temporary database, called over HTTP. A movable `clock` fixture lets tests jump weeks ahead to watch paydays, bills and reviews happen | `test_budget_api.py`, `test_demo.py` |
+| **Privacy and security** | The guarantees in §2: network guard, host and origin checks, data location | `test_privacy.py`, `test_local_security.py` |
+| **Config and CLI** | Settings validation, the port scan, command-line behavior | `test_config_and_cli.py` |
+| **Manual walkthrough** | A person or agent uses the real UI in a browser (§5) | — |
+| **Separation test** | A human checks the computer around the app: AI extensions, screen access, file access | [testing/SEPARATION_TEST.md](testing/SEPARATION_TEST.md) |
+
+**How the network guard works:** during the test, Python's `socket.connect` and `socket.getaddrinfo` are swapped for versions that record and refuse anything that isn't `127.0.0.1`, `::1` or `localhost`. The test then exercises every API area and fails if anything was attempted.
+
+## 4. Run the tests
+
+From the repo root:
+
+```bash
+uv run --directory backend pytest -q          # all backend tests (a few seconds)
+npm run build --prefix frontend               # type-checks and builds the UI
+```
+
+Both must pass. Run one file with `uv run --directory backend pytest -q tests/test_privacy.py`.
+
+## 5. Manual walkthrough (for UI changes)
+
+1. Start the demo: `uv run --directory backend turtlemaxxxing --demo`. It uses fictional data in a throwaway folder.
+2. Open http://turtle.localhost:8765 (or http://127.0.0.1:8765).
+3. Visit **every page** you touched, and at least **Cash flow**, **Bills calendar** and **Review inbox**. Do one real action on each: mark a bill paid, resolve a check-in, add a rule with a split.
+4. Check **phone width** (about 375px) and **dark mode**.
+5. Open developer tools → **Network** and reload. **Every request must go to the app's own address.** Any other domain (fonts, analytics, CDNs) is a bug.
+6. Note what you checked in the commit or PR description.
+
+AI agents with a browser should do this too, and report what they saw, including anything that looked wrong.
+
+## 6. Definition of done (any change, any author)
+
+- [ ] Backend tests pass: `uv run --directory backend pytest -q`.
+- [ ] The frontend builds: `npm run build --prefix frontend`.
+- [ ] New behavior has tests, and a bug fix has a regression test.
+- [ ] No test from §2 was weakened, skipped or deleted.
+- [ ] UI changes got the manual walkthrough (§5).
+- [ ] No real data, PII, secrets, tokens or real URLs in code, tests, docs or screenshots.
+- [ ] Module `AGENTS.md` and `docs/SETUP_NOTES.md` are updated if behavior or setup changed.
+
+## 7. Bugs found this way (so far)
+
+Real examples, kept to show the process works and why the rules exist:
+
+| Bug | How it was found | Regression test |
+|---|---|---|
+| Rule dates before an account's "balance as of" date were counted on top of a balance that already included them | Manual walkthrough with demo data: the checking balance didn't match a hand calculation | `test_rule_dates_before_the_opening_balance_are_not_double_counted` |
+| In the month an account was opened, the cash-flow chart started at $0 and never showed the starting balance | Manual walkthrough: the chart's shape was wrong | `test_cashflow_shows_starting_balance_in_the_opening_month` |
+| The review inbox briefly showed "All caught up!" while still loading, even with items waiting | Manual walkthrough | Manual check only (frontend tests are a known gap, see §8) |
+
+## 8. Known gaps (honest list)
+
+- **No automated frontend tests yet.** The UI is checked by type-checking, the build, and manual walkthroughs. Planned: component tests for money input and forms.
+- **No CI yet.** Tests run locally. Planned: GitHub Actions running the suite on every push, so results are public.
+- **Migrations:** only one schema version exists, so upgrade paths aren't tested yet. The first new migration must come with an upgrade test (old database → new).
+- **Time zones:** "today" is the computer's local date. Travel across time zones isn't tested.
+- **The separation test is manual** and depends on each person's machine.
+
+## 9. Changing this SOP
+
+Changes to this file need a clear reason in the commit message. Loosening a rule needs an explanation of what replaces it.
