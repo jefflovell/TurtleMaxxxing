@@ -14,7 +14,11 @@ A free, open-source, **local-first personal assistant and project manager** that
 
 🚧 **Status:** early. Milestone 1 (budgeting) is working. See [PLAN.md](PLAN.md).
 
-## Try it
+## Install
+
+**Easiest:** paste the [one-paste setup prompt](docs/SETUP_PROMPT.md) into Claude Code. It checks prerequisites, installs, runs the tests, and adds an **"I like turtles"** shortcut to your Start menu.
+
+## Try it by hand
 
 You need [uv](https://docs.astral.sh/uv/) and [Node.js](https://nodejs.org/) (LTS). From this folder:
 

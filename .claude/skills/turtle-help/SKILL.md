@@ -36,7 +36,7 @@ Pick the matching action below.
 1. `git status` must be clean. If they have local changes, ask before doing anything.
 2. `git pull`
 3. `uv sync --directory backend` and `npm install --prefix frontend`, then `npm run build --prefix frontend`.
-4. Restart the app. Database updates run automatically, with a backup taken first.
+4. Ask the user to close the minimized "TurtleMaxxxing" window, then start it again from the "I like turtles" shortcut (or `scripts\start-turtle.ps1`). Database updates run automatically, with a backup taken first.
 5. Verify: `uv run --directory backend pytest -q` passes and the app loads. Summarize what's new from `git log --oneline` since the old version.
 
 ## 4. Undo

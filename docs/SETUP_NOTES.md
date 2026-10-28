@@ -56,9 +56,16 @@ Not done, on purpose:
 - **Port 80** (to drop `:8765`): often taken (IIS and other tools), and grabbing it silently would surprise people.
 - **Hijacking address-bar search** for the exact phrase: needs a browser extension or a search-engine change. Out of scope.
 
-## Not yet decided (for the setup prompt)
-- How the app starts day to day: a desktop shortcut, a start-menu entry, or start at login. TBD with the first user.
+## Day-to-day start and stop
+- **Start:** the Start-menu shortcut **"I like turtles"** runs `scripts/start-turtle.ps1 -Browser <personal browser>`. It reads the address from `settings.json`, starts the app in a minimized window if it isn't already running (checked via `127.0.0.1:<port>/api/health`), then opens the address in the chosen browser. Icon: `assets/turtle.ico`.
+- **Stop:** close the minimized "TurtleMaxxxing" window.
+- `-ExecutionPolicy Bypass` in the shortcut applies only to that one script run. No machine setting changes.
+- The browser is chosen explicitly so the app never opens in the work browser by accident, even if that's the system default.
+
+## Not yet decided
+- Start at login: off for now. Could be added as an opt-in later.
 - Whether to ship a prebuilt `frontend/dist` so users don't need Node at all.
+- A `docs/INSTALL.md` human-only guide. For now the README's "Try it by hand" plus `SETUP_PROMPT.md` cover it.
 
 ## Repo
 
@@ -82,3 +89,4 @@ Not done, on purpose:
   - The `turtle-help` skill and `docs/troubleshooting/` are added. The setup prompt should mention both at the end ("if anything goes wrong, open this folder in Claude Code and say *help*").
   - Friendly address `turtle.localhost`, `settings.json`, `--find-port` / `--hostname` / `--demo` added. A host and origin guard protects against malicious websites (DNS rebinding, CSRF).
   - The testing SOP is published at `docs/TESTING.md`. The setup prompt's self-check should run the full test suite and name the privacy tests in its summary.
+  - `docs/SETUP_PROMPT.md` v1 written. Prerequisites via winget (verified IDs: `Git.Git`, `astral-sh.uv`, `OpenJS.NodeJS.LTS`). Dry-run on the dev machine from a fresh clone: install, build, 63 tests, `--find-port` (correctly skipped a busy 8765), start script (start + already-running paths), shortcut creation. **Not yet run:** a real winget install, the browser-launch path, a clean Windows account.

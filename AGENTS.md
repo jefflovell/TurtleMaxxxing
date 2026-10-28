@@ -23,7 +23,8 @@ A free, open-source, **local-first** personal assistant and project manager. M1 
 | `backend/` | Python API server (FastAPI + SQLite), managed with `uv` | [backend/AGENTS.md](backend/AGENTS.md) |
 | `backend/turtlemaxxxing/budget/` | Budget logic: schedules, ledger, reviews, API | [budget/AGENTS.md](backend/turtlemaxxxing/budget/AGENTS.md) |
 | `frontend/` | React + TypeScript UI (Vite) | [frontend/AGENTS.md](frontend/AGENTS.md) |
-| `docs/` | Security guide, setup notes, tests, troubleshooting | — |
+| `docs/` | Security guide, testing SOP, setup prompt and notes, troubleshooting | — |
+| `scripts/start-turtle.ps1` | What the "I like turtles" shortcut runs: starts the app if needed, then opens the browser | — |
 | `docs/troubleshooting/` | Step-by-step fixes an agent can run | [index](docs/troubleshooting/README.md) |
 | `.claude/skills/turtle-help/` | Claude Code skill: troubleshoot, change, update, undo | — |
 

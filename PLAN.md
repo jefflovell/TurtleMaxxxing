@@ -256,7 +256,9 @@ There's no reliable current market-share data for calendars, so this is ranked b
 - ✅ `AGENTS.md`, module guides, the `turtle-help` skill (troubleshoot, change, update, undo) and the first troubleshooting guides (§8a).
 - ✅ Automated tests, including **T5 no network by default** (`backend/tests/test_privacy.py`).
 - ➡️ **Moved to M2:** CSV import that matches transactions to expected entries.
-- ⬜ First version of `docs/SETUP_PROMPT.md`, tested on a clean Windows user account.
+- ✅ First version of [`docs/SETUP_PROMPT.md`](docs/SETUP_PROMPT.md), plus the "I like turtles" Start-menu shortcut (`scripts/start-turtle.ps1`). Dry-run on the dev machine: fresh clone → install → tests → port scan → start script → shortcut.
+- ⬜ Run the setup prompt end to end on a clean Windows user account (a real `winget` install and a real browser launch), ideally the first user's own PC.
+- ✅ Public CI on every push: [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 - ⬜ First-user UAT: enter real bills and paychecks, use it for a couple of weeks, and collect feedback.
 
 **M2 — Tasks, reminders and projects** (§2b)
