@@ -239,9 +239,11 @@ There's no reliable current market-share data for calendars, so this is ranked b
 ## 7. Milestones
 
 **M0 — Guardrails and decisions** *(no app code)*
-- Answer the open questions.
-- Write `SECURITY.md` (zones, rules, threat list, the "what's OK to tell an AI" rule of thumb).
-- Separation test: AI browser extension in a personal profile vs the work browser, and confirm computer use is off.
+- ✅ Answer the open questions.
+- ✅ Write [`docs/SECURITY.md`](docs/SECURITY.md) (zones, the sticky-note test for what's OK to tell an AI, data flows, habits, vulnerability reporting).
+- ✅ Write the [separation test](docs/testing/SEPARATION_TEST.md): canary-based checks T1–T4 now (browser extension, other profiles, computer use, file access), with T5–T10 added as milestones land.
+- ⬜ First user runs T1–T4 on their personal PC and records the results locally.
+- ⬜ Turn on GitHub private vulnerability reporting for the repo (repo owner, in Settings → Security).
 
 **M1 — App shell + budget (P1)** 🎯
 - FastAPI, SQLite and the web UI running on `localhost`.
