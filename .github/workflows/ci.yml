@@ -1,0 +1,74 @@
+# Runs every test in public on every push and pull request.
+# See docs/TESTING.md for what each test promises.
+#
+# Supply-chain hygiene: third-party actions are pinned to exact commit SHAs
+# (the version tag is in the comment), the workflow can only read the repo,
+# and no secrets are used.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (${{ matrix.os }}, Python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows is the first target platform; Linux keeps the code portable.
+        os: [windows-latest, ubuntu-latest]
+        # Oldest supported and newest.
+        python: ["3.12", "3.15"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Install dependencies (exactly as locked)
+        run: uv sync --locked --directory backend
+
+      - name: Privacy and security promises
+        run: uv run --directory backend pytest -v tests/test_privacy.py tests/test_local_security.py
+
+      - name: Full test suite
+        run: uv run --directory backend pytest -v
+
+  frontend:
+    name: Frontend (lint, type-check, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies (exactly as locked)
+        run: npm ci --prefix frontend
+
+      - name: Lint
+        run: npm run lint --prefix frontend
+
+      - name: Type-check and build
+        run: npm run build --prefix frontend

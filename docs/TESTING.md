@@ -44,6 +44,7 @@ This is a **standard operating procedure.** It applies to every change, whether 
 | **Config and CLI** | Settings validation, the port scan, command-line behavior | `test_config_and_cli.py` |
 | **Manual walkthrough** | A person or agent uses the real UI in a browser (§5) | — |
 | **Separation test** | A human checks the computer around the app: AI extensions, screen access, file access | [testing/SEPARATION_TEST.md](testing/SEPARATION_TEST.md) |
+| **CI** | All automated layers above, on Windows and Linux, in public, on every push | [.github/workflows/ci.yml](../.github/workflows/ci.yml) |
 
 **How the network guard works:** during the test, Python's `socket.connect` and `socket.getaddrinfo` are swapped for versions that record and refuse anything that isn't `127.0.0.1`, `::1` or `localhost`. The test then exercises every API area and fails if anything was attempted.
 
@@ -57,6 +58,20 @@ npm run build --prefix frontend               # type-checks and builds the UI
 ```
 
 Both must pass. Run one file with `uv run --directory backend pytest -q tests/test_privacy.py`.
+
+### In public, on every push (CI)
+
+[`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on every push and pull request, and anyone can read the results on the repository's **Actions** tab or via the badge in the README.
+
+| Job | What runs |
+|---|---|
+| **Backend** × 4 | Windows and Linux × Python 3.12 (oldest supported) and 3.15 (newest). Installs exactly what's in `uv.lock`, runs the **privacy and security tests as their own named step** so they're easy to find, then the full suite. |
+| **Frontend** | Installs exactly what's in `package-lock.json`, then lint, type-check and build. |
+
+**CI hygiene:**
+- Third-party actions are pinned to exact commit SHAs, and Dependabot proposes updates as pull requests that go through CI first.
+- The workflow has read-only access to the repo and uses no secrets.
+- **A red CI run blocks "done."** Don't merge or call a change finished while CI is failing.
 
 ## 5. Manual walkthrough (for UI changes)
 
@@ -72,7 +87,8 @@ AI agents with a browser should do this too, and report what they saw, including
 ## 6. Definition of done (any change, any author)
 
 - [ ] Backend tests pass: `uv run --directory backend pytest -q`.
-- [ ] The frontend builds: `npm run build --prefix frontend`.
+- [ ] The frontend lints and builds: `npm run lint --prefix frontend` and `npm run build --prefix frontend`.
+- [ ] CI is green on the pushed commit.
 - [ ] New behavior has tests, and a bug fix has a regression test.
 - [ ] No test from §2 was weakened, skipped or deleted.
 - [ ] UI changes got the manual walkthrough (§5).
@@ -92,7 +108,6 @@ Real examples, kept to show the process works and why the rules exist:
 ## 8. Known gaps (honest list)
 
 - **No automated frontend tests yet.** The UI is checked by type-checking, the build, and manual walkthroughs. Planned: component tests for money input and forms.
-- **No CI yet.** Tests run locally. Planned: GitHub Actions running the suite on every push, so results are public.
 - **Migrations:** only one schema version exists, so upgrade paths aren't tested yet. The first new migration must come with an upgrade test (old database → new).
 - **Time zones:** "today" is the computer's local date. Travel across time zones isn't tested.
 - **The separation test is manual** and depends on each person's machine.

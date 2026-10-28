@@ -1,5 +1,7 @@
 # TurtleMaxxxing
 
+[![CI](https://github.com/jefflovell/TurtleMaxxxing/actions/workflows/ci.yml/badge.svg)](https://github.com/jefflovell/TurtleMaxxxing/actions/workflows/ci.yml)
+
 ![A pixel-art turtle](assets/turtle.png)
 
 A free, open-source, **local-first personal assistant and project manager** that keeps work and personal life separate, with AI help only where you allow it.

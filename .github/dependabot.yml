@@ -1,0 +1,8 @@
+# Keeps the pinned CI actions up to date. Each update arrives as a pull
+# request, so CI runs on it before anyone merges.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

@@ -38,7 +38,9 @@ A free, open-source, **local-first** personal assistant and project manager. M1 
 | Try it with fictional data (safe for testing) | `uv run --directory backend turtlemaxxxing --demo` |
 | Pick a free port and/or friendly name | `uv run --directory backend turtlemaxxxing --find-port --hostname turtle.localhost` |
 | Run backend tests | `uv run --directory backend pytest -q` |
+| Lint the frontend | `npm run lint --prefix frontend` |
 | Type-check and build the frontend | `npm run build --prefix frontend` |
+| Check CI for the latest push | `gh run list --limit 3` (or the repo's Actions tab) |
 | Develop the UI with live reload | Start the app, then `npm run dev --prefix frontend` and open http://127.0.0.1:5173 |
 
 **Definition of done for any change:** the checklist in [docs/TESTING.md §6](docs/TESTING.md#6-definition-of-done-any-change-any-author).

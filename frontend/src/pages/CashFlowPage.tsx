@@ -26,12 +26,14 @@ export default function CashFlowPage({ accounts, refresh, version, goTo }: PageP
   const spending = accounts.filter((a) => !a.archived && ['checking', 'savings', 'credit'].includes(a.kind))
   const [selected, setSelected] = useState<number[] | null>(null)
   const accountIds = selected ?? spending.filter((a) => a.kind === 'checking').map((a) => a.id)
-  const [flow, setFlow] = useState<Cashflow | null>(null)
+  const [loaded, setFlow] = useState<Cashflow | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const idsKey = accountIds.join(',')
+  // No accounts picked means nothing to show, whatever was loaded before.
+  const flow = idsKey ? loaded : null
   useEffect(() => {
-    if (!idsKey) { setFlow(null); return }
+    if (!idsKey) return
     api.cashflow(month, idsKey.split(',').map(Number))
       .then((f) => { setFlow(f); setError(null) })
       .catch((err: Error) => setError(err.message))
