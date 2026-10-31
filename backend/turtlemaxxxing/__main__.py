@@ -84,7 +84,20 @@ def _serve(demo: bool) -> int:
     return 0
 
 
+def _safe_output() -> None:
+    """Never crash over a character the output can't show.
+
+    When the installer captures this output on Windows, Python 3.12-3.14 write with
+    the old code page (e.g. cp1252), which has no ✓ or 🐢. Unshowable characters
+    become "?" instead of raising UnicodeEncodeError.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(errors="replace")
+
+
 def main(argv: list[str] | None = None) -> None:
+    _safe_output()
     parser = argparse.ArgumentParser(prog="turtlemaxxxing", description="Local-first personal assistant. 🐢")
     parser.add_argument("--find-port", action="store_true", help="scan for a free local port and save it")
     parser.add_argument("--hostname", help="friendly address to save, e.g. turtle.localhost")
