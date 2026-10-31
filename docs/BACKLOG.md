@@ -13,10 +13,15 @@ Revision requests from testing: bugs, things that work but should work different
 | ID | Title | Category | Priority | Status | Complexity | Milestone | Requested | Requester |
 |---|---|---|---|---|---|---|---|---|
 | QA-001 | Calendar pills are cramped and cut off at phone width | ui, ux | P2 | triaged | S | M2b | 2026-10-31 | qa-agent |
-| QA-002 | Reminder pop-ups cover the page at phone width | ui, ux | P2 | triaged | S | M2a | 2026-10-31 | qa-agent |
+| QA-002 | Reminder pop-ups get in the way until you act on them | ui, ux | P2 | triaged | S | M2a | 2026-10-31 | qa-agent |
 | QA-003 | Naming a new list or saved filter uses the browser's plain pop-up box | ux, design, extension | P3 | triaged | S | M2b | 2026-10-31 | qa-agent |
 | QA-004 | No keyboard or touch way to reorder cards on the board | accessibility, extension | P3 | triaged | M | M2a | 2026-10-28 | qa-agent |
 | QA-005 | Review the starter label set with the first user | design | P3 | new | XS | M2a | 2026-10-28 | maintainer |
+| QA-006 | Show each account's next automatic check-in date on the Accounts page | ui, ux, extension | P3 | new | M | M1 | 2026-10-31 | maintainer |
+| QA-007 | Rename the Accounts table's "Check-in" column to "Auto check" | ui | P3 | new | XS | M1 | 2026-10-31 | maintainer |
+| QA-008 | Let people drag table column edges to change their width | ux, ui, extension | P3 | new | M | M1 | 2026-10-31 | maintainer |
+| QA-009 | Make "Check balance" and "Archive" on the Accounts table look like buttons | ui, ux | P3 | new | XS | M1 | 2026-10-31 | maintainer |
+| QA-010 | Explore automatic account updates and investment views (balances, alerts, APY, cost basis, year-over-year) | design, feature, extension, integration, auth, privacy, data | P3 | new | L | M1 | 2026-10-31 | maintainer |
 
 ## Closed
 
@@ -36,14 +41,19 @@ Revision requests from testing: bugs, things that work but should work different
 - **Privacy impact:** none
 - **Target:** M5 (mobile-friendly layout) unless UAT says sooner
 
-### QA-002 Reminder pop-ups cover the page at phone width
+### QA-002 Reminder pop-ups get in the way until you act on them
 - **Found in:** `72bdd93` (M2b walkthrough; the pop-ups shipped in M2a)
-- **Environment:** demo data, 375px wide
-- **Actual:** the reminder pop-up sits over the middle of the calendar until it's acted on.
-- **Expected:** on narrow screens it docks at the bottom edge, or collapses to a small 🔔 badge that expands on tap.
+- **Environment:** any screen size. Worst at phone width (375px), where it covers the middle of the calendar.
+- **Actual:** a due reminder's pop-up stays on top of the page, covering buttons and content, until you pick Done, 10 min, 1 hour or Dismiss. Seeing it is fine; being forced to act on it just to use the page isn't.
+- **Expected:** reminders stay visible without blocking anything, and you never *have* to act on one:
+  - It **tucks itself away when you scroll** (the requester's suggestion), or after a few seconds, into a small 🔔 badge with a count in a corner.
+  - Click the badge to open the reminders again, with the same Done / snooze / Dismiss buttons.
+  - It only pops back open for a **new** reminder, not on every 30-second check.
+  - On phones, the badge sits clear of content and buttons.
 - **Extends:** Reminders
 - **Privacy impact:** none
-- **Target:** M5
+- **Also requested by:** maintainer, 2026-10-31 ("annoying… in the way of functionality; I don't necessarily want to dismiss or snooze either. Maybe autohide on scroll.")
+- **Notes:** frontend only (`ReminderToasts.tsx` and its styles). Screen readers should still hear new reminders. Originally logged as phone-only with Target M5; widened to every screen size, so it's no longer tied to M5.
 
 ### QA-003 Naming a new list or saved filter uses the browser's plain pop-up box
 - **Found in:** `72bdd93`
@@ -69,6 +79,75 @@ Revision requests from testing: bugs, things that work but should work different
 - **Extends:** Labels
 - **Privacy impact:** none. Keep `private` as an auto-Private starter.
 - **Notes:** from planning: "we can muck about with specific labels in QA / UAT."
+
+### QA-006 Show each account's next automatic check-in date on the Accounts page
+- **Found in:** `ae84cea`
+- **Environment:** any
+- **Actual:** the Accounts table's Check-in column shows how often ("Every 30 days") and the last check-in date, but not when the next one will appear in the Review inbox. You have to work it out yourself.
+- **Expected:** a **Next check-in** column: the date (e.g. "Sat, Nov 28"), "Due now" when one is already waiting in the inbox, or "—" when check-ins are off.
+- **Extends:** Accounts, balance check-ins (Review inbox)
+- **Privacy impact:** none
+- **Notes:** the next date is currently calculated only inside `reviews.generate()` (last check-in, or the opening date, plus the interval). Move that into one helper that both the review generator and the accounts API use, so the column can't disagree with when the check-in actually opens. Add a test that the shown date matches when the review opens. If QA-007 lands first, name this column **Next auto check** to match.
+
+### QA-007 Rename the Accounts table's "Check-in" column to "Auto check"
+- **Found in:** `ae84cea`
+- **Environment:** any
+- **Actual:** the column header reads "Check-in".
+- **Expected:** it reads "Auto check", making clear the app schedules it.
+- **Extends:** Accounts
+- **Privacy impact:** none
+- **Notes:** header only (`frontend/src/pages/AccountsPage.tsx`). The Review inbox and the "Check balance now" button keep their names unless asked. Related: QA-006 (its new column would be "Next auto check").
+
+### QA-008 Let people drag table column edges to change their width
+- **Found in:** `ae84cea`
+- **Environment:** any (mouse or trackpad)
+- **Actual:** column widths are fixed by the layout. Long names, like a bank description in the CSV import preview, wrap or squeeze other columns.
+- **Expected:** drag the edge of a column header to resize it, with a visible handle and a resize cursor. Widths are remembered per table in this browser (a per-viewer convenience, like the list/board choice). Double-click a handle to reset it.
+- **Extends:** all five tables: Accounts, Money rules, Cash flow (M1), Labels (M2a) and the Import CSV preview (M2b). The Milestone column shows the earliest.
+- **Privacy impact:** none (only column widths are saved, in the browser).
+- **Notes:** build one shared resizable-header piece and use it on all five tables. Keyboard users need a way too, e.g. focus the handle and use the arrow keys. Sized M because it touches every table page and is checked by hand only (no automated frontend tests, TESTING.md §8). At phone width, keep tables scrolling sideways instead.
+
+### QA-009 Make "Check balance" and "Archive" on the Accounts table look like buttons
+- **Found in:** `ae84cea`
+- **Environment:** any
+- **Actual:** each account row's **Check balance** and **Archive** (or **Restore**) are borderless "ghost" buttons, so they read as plain text and don't look clickable.
+- **Expected:** they look like buttons: a border and background like the app's other small buttons, with clear spacing between the two.
+- **Extends:** Accounts
+- **Privacy impact:** none
+- **Notes:** style only: drop `ghost` from both in `frontend/src/pages/AccountsPage.tsx`. Worth deciding while there: Archive hides an account, so it could look quieter than Check balance, or ask "Archive Checking?" first.
+
+### QA-010 Explore automatic account updates and investment views (balances, alerts, APY, cost basis, year-over-year)
+- **Found in:** `ae84cea`
+- **Environment:** n/a (design question)
+- **Actual:** account balances move only through money rules, manual entries, check-ins and CSV imports. Accounts have no history views, interest rates or investment details.
+- **Expected:** a written design (in PLAN.md) for how accounts could update themselves and what to show, covering:
+  - **Automatic updates:** balance changes and transactions arriving without a manual CSV.
+  - **Connecting securely:** which connection methods are acceptable, and developing and testing them against providers' **sandbox** environments with fictional data before any real account.
+  - **Alerts:** e.g. low balance, unusual charges, a bill that came in higher than expected.
+  - **Views:** balance history per account; **APY** and interest earned on savings; **cost basis** and **year-over-year** change on investment accounts. Shown as tables or as groups of charts (e.g. "Kids' 529s", "Retirement").
+- **Extends:** Accounts (M1), CSV import (M2b), connectors (M4)
+- **Privacy impact:** review. This is a core privacy decision, not a feature tweak:
+  - The plan promises **no bank logins** (PLAN.md R7, §3). Any connection is an opt-in connector the user turns on.
+  - Credentials stay in Windows Credential Manager, never in the database or chat (SECURITY.md).
+  - Network calls exist only while a connector is enabled, and `test_privacy.py` still proves there are none by default.
+  - Account data must never reach AI paths it isn't allowed on.
+  - Market prices for cost basis and year-over-year views also need a network source, which is a separate decision.
+- **Options to compare in the design:**
+  - Read-only feeds the user controls with a revocable token (e.g. SimpleFIN-style bridges).
+  - Bank aggregators with sandboxes (e.g. Plaid): a third party sees the data.
+  - OFX / Direct Connect where banks support it.
+  - Parsing bank alert emails (already planned for M4).
+  - A watched "drop folder" for downloaded statements: no network at all.
+- **Proposed split** (each becomes its own item once the design is agreed):
+  1. Balance history chart and table per account, built from the ledger the app already has. **No network**, could ship early (S–M).
+  2. Interest rate (APY) on savings accounts, with projected interest added as an expected entry (M).
+  3. Account groups ("Kids' 529s") with combined balances and charts (M).
+  4. Holdings, lots and cost basis for investment accounts, entered by hand or imported by CSV (L).
+  5. Year-over-year change and returns (M, after 4).
+  6. Alerts on balances and transactions, in-app only (M).
+  7. One opt-in connector, sandbox first (XL; split again when picked).
+- **Target:** design before M4 (Connectors). Item 1 could come sooner.
+- **Notes:** the requester's "AYPs" is read here as **APY** (annual percentage yield). Confirm when this is triaged.
 
 ---
 
