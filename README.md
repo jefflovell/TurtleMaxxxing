@@ -2,7 +2,9 @@
 
 [![CI](https://github.com/jefflovell/TurtleMaxxxing/actions/workflows/ci.yml/badge.svg)](https://github.com/jefflovell/TurtleMaxxxing/actions/workflows/ci.yml)
 
-![A pixel-art turtle](assets/turtle.png)
+<p align="center">
+  <img src="assets/turtle-i-like-turtles.png" alt="A pixel-art turtle above the words &quot;I like turtles&quot;">
+</p>
 
 A free, open-source, **local-first personal assistant and project manager** that keeps work and personal life separate, with AI help only where you allow it.
 
@@ -12,7 +14,22 @@ A free, open-source, **local-first personal assistant and project manager** that
 - ✅ **Tasks and reminders** with kanban status, your own labels (star your favorites), a calendar, and the people each task is about.
 - 💸 **Budgeting that runs itself:** describe your paychecks, splits, bills and subscriptions once, and the app keeps the ledger moving. Import your bank's CSV to confirm what actually happened.
 
-🚧 **Status:** early. Budgeting, tasks, the calendar, CSV import and contacts are working. AI help comes next. See [PLAN.md](PLAN.md).
+🚧 **Status:** early. Budgeting, tasks, the calendar, CSV import and contacts are working. AI help comes next.
+
+## Roadmap
+
+| | Milestone | What you get |
+|---|---|---|
+| ✅ | **M0: Guardrails** | The [security guide](docs/SECURITY.md) and a [separation test](docs/testing/SEPARATION_TEST.md) to check your AI tools can't see your work stuff |
+| ✅ | **M1: App + budget** | Accounts, paychecks with splits, bills and subscriptions that post themselves, a cash-flow chart, balance check-ins, the one-paste installer |
+| ✅ | **M2: Tasks and people** | Tasks with kanban status, your own labels, lists, reminders, a Today screen, a calendar with tasks and bills, saved filters, bank CSV import, contacts |
+| 🔜 | **M3: AI, your way** | Connect your own Claude. Say *"remind me to review the proposal by Friday noon"* and it proposes the task for you to approve. Private items never reach it, and every access is logged. |
+| ⬜ | **M4: Connectors** | Read your calendars and bill-alert emails (only the ones you turn on) |
+| ⬜ | **M5: Phone** | Use it from your phone over your own private network |
+| ⬜ | **M6: Pick your AI** | A chat panel, with fully local models (Ollama) or the provider you choose |
+| ⬜ | **M7: Research** | Summarize public documents like building codes and check your notes against them |
+
+After the features are in, the first user tests everything together, and their feedback lands in the [backlog](docs/BACKLOG.md). The full plan, with the reasons behind each choice, is in [PLAN.md](PLAN.md).
 
 ## Get it on your computer
 

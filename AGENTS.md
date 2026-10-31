@@ -34,6 +34,7 @@ See `PLAN.md` for the roadmap.
 | `docs/` | Security guide, testing SOP, setup prompt and notes, troubleshooting | — |
 | `docs/BACKLOG.md` | QA / UAT revision requests: bugs and change requests from testing, with priority, complexity and status. **Requesters by alias only.** | `.claude/skills/backlog/` |
 | `scripts/start-turtle.ps1` | What the "I like turtles" shortcut runs: starts the app if needed, then opens the browser | — |
+| `scripts/make_art.py` | Redraws the README banner and the link-preview card in `assets/` (standard library only) | — |
 | `docs/troubleshooting/` | Step-by-step fixes an agent can run | [index](docs/troubleshooting/README.md) |
 | `.claude/skills/turtle-help/` | Claude Code skill: troubleshoot, change, update, undo | — |
 | `.claude/skills/backlog/` | Claude Code skill: add, triage, work on and close backlog items | — |
