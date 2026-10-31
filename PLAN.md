@@ -243,7 +243,7 @@ There's no reliable current market-share data for calendars, so this is ranked b
 - ✅ Write [`docs/SECURITY.md`](docs/SECURITY.md) (zones, the sticky-note test for what's OK to tell an AI, data flows, habits, vulnerability reporting).
 - ✅ Write the [separation test](docs/testing/SEPARATION_TEST.md): canary-based checks T1–T4 now (browser extension, other profiles, computer use, file access), with T5–T10 added as milestones land.
 - ⬜ First user runs T1–T4 on their personal PC and records the results locally.
-- ⬜ Turn on GitHub private vulnerability reporting for the repo (repo owner, in Settings → Security).
+- ✅ Turn on GitHub private vulnerability reporting for the repo. Also turned on CodeQL code scanning (default setup); first scan clean.
 
 **M1 — App shell + budget (P1)** 🎯
 - ✅ FastAPI, SQLite and the web UI running on `localhost`.

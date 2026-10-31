@@ -75,6 +75,7 @@ If your job involves confidential or regulated material, **check your employer's
 - **Only on your computer:** the app listens on `127.0.0.1`, which other devices can't reach. Its address, `http://turtle.localhost:8765`, is a special name that every browser keeps on your own computer.
 - **Guards against other websites:** any web page you visit runs on your computer too, so the app only answers to its own address and refuses changes coming from other sites. A malicious page can't read or change your data through your browser.
 - **Tested, in public:** every promise on this page has an automated test. See the [testing SOP](TESTING.md) for the full list and how to run them yourself.
+- **Scanned for security bugs:** GitHub's CodeQL checks the code on every change and weekly. Results are on the repository's *Security* tab.
 
 ## 6. Check your setup
 

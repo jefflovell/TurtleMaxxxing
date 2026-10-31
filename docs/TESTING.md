@@ -75,11 +75,13 @@ Both must pass. Run one file with `uv run --directory backend pytest -q tests/te
 |---|---|
 | **Backend** × 4 | Windows and Linux × Python 3.12 (oldest supported) and 3.15 (newest). Installs exactly what's in `uv.lock`, runs the **privacy and security tests as their own named step** so they're easy to find, then the full suite. |
 | **Frontend** | Installs exactly what's in `package-lock.json`, then lint, type-check and build. |
+| **CodeQL** | GitHub's code scanning (default setup, configured in the repo's settings rather than a workflow file). Scans the Python, TypeScript and workflow code for security bugs on every push and pull request to `main`, and weekly. Alerts appear on the repository's **Security** tab. |
 
 **CI hygiene:**
 - Third-party actions are pinned to exact commit SHAs, and Dependabot proposes updates as pull requests that go through CI first.
 - The workflow has read-only access to the repo and uses no secrets.
 - **A red CI run blocks "done."** Don't merge or call a change finished while CI is failing.
+- **A new CodeQL alert counts as a failing test.** Fix it, or dismiss it on the Security tab with a written reason if it's a false positive. Never dismiss one silently. Agents can list open alerts with `gh api repos/jefflovell/TurtleMaxxxing/code-scanning/alerts?state=open`.
 
 ## 5. Manual walkthrough (for UI changes)
 
@@ -98,7 +100,7 @@ AI agents with a browser should do this too, and report what they saw, including
 
 - [ ] Backend tests pass: `uv run --directory backend pytest -q`.
 - [ ] The frontend lints and builds: `npm run lint --prefix frontend` and `npm run build --prefix frontend`.
-- [ ] CI is green on the pushed commit.
+- [ ] CI is green on the pushed commit, with no new CodeQL alerts.
 - [ ] New behavior has tests, and a bug fix has a regression test.
 - [ ] No test from §2 was weakened, skipped or deleted.
 - [ ] UI changes got the manual walkthrough (§5).
