@@ -8,7 +8,7 @@ import TaskRow from '../components/TaskRow'
 import { api } from '../lib/api'
 import { todayIso } from '../lib/format'
 import { STATUSES, STATUS_META } from '../lib/tasks'
-import type { Task, TaskStatus } from '../lib/types'
+import type { FilterSpec, Task, TaskStatus } from '../lib/types'
 
 type View = 'list' | 'board'
 type Scope = 'all' | 'inbox' | number
@@ -19,12 +19,14 @@ function loadView(): View {
   try { return localStorage.getItem(VIEW_KEY) === 'board' ? 'board' : 'list' } catch { return 'list' }
 }
 
-export default function TasksPage({ labels, lists, refresh, version, goTo }: PageProps) {
-  const [view, setViewState] = useState<View>(loadView)
-  const [scope, setScope] = useState<Scope>('all')
-  const [statuses, setStatuses] = useState<TaskStatus[]>([])
-  const [labelIds, setLabelIds] = useState<number[]>([])
-  const [q, setQ] = useState('')
+export default function TasksPage({ labels, lists, activeFilter, refresh, version, goTo }: PageProps) {
+  // Opened from a saved filter: start from it. App remounts this page per filter.
+  const saved = activeFilter?.filters
+  const [view, setViewState] = useState<View>(saved?.view ?? loadView)
+  const [scope, setScope] = useState<Scope>(saved?.scope ?? 'all')
+  const [statuses, setStatuses] = useState<TaskStatus[]>(saved?.statuses ?? [])
+  const [labelIds, setLabelIds] = useState<number[]>(saved?.label_ids ?? [])
+  const [q, setQ] = useState(saved?.q ?? '')
   const [tasks, setTasks] = useState<Task[] | null>(null)
   const [editing, setEditing] = useState<Task | 'new' | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -63,12 +65,43 @@ export default function TasksPage({ labels, lists, refresh, version, goTo }: Pag
   const toggle = <T,>(xs: T[], x: T) => (xs.includes(x) ? xs.filter((y) => y !== x) : [...xs, x])
   const filtersOn = statuses.length > 0 || labelIds.length > 0 || q.trim() !== ''
 
+  const spec: FilterSpec = { scope, statuses, label_ids: labelIds, q: q.trim(), view }
+  const changed = activeFilter !== null && JSON.stringify(spec) !== JSON.stringify(activeFilter.filters)
+
+  async function saveFilter() {
+    const name = prompt('Name for this saved filter, e.g. "Critical work"')
+    if (!name?.trim()) return
+    try {
+      await api.createFilter(name.trim(), spec)
+      refresh()
+    } catch (err) {
+      setError((err as Error).message)
+    }
+  }
+
+  async function updateFilter() {
+    if (!activeFilter) return
+    await api.updateFilter(activeFilter.id, { filters: spec })
+    refresh()
+  }
+
+  async function removeFilter() {
+    if (!activeFilter || !confirm(`Remove the saved filter "${activeFilter.name}"? Your tasks stay.`)) return
+    await api.deleteFilter(activeFilter.id)
+    goTo('tasks')
+    refresh()
+  }
+
+  const heading = activeFilter
+    ? `${activeFilter.emoji ?? '⭐'} ${activeFilter.name}`
+    : currentList ? `${currentList.emoji ?? '📋'} ${currentList.name}` : scope === 'inbox' ? '📥 Inbox' : 'All tasks'
+
   return (
     <div className="stack">
       <div className="page-header">
         <div>
-          <h1>{currentList ? `${currentList.emoji ?? '📋'} ${currentList.name}` : scope === 'inbox' ? '📥 Inbox' : 'All tasks'}</h1>
-          <p>Every task, by status and label. Drag cards between columns on the board.</p>
+          <h1>{heading}</h1>
+          <p>{activeFilter ? 'A saved filter. Change the filters below, then save the changes.' : 'Every task, by status and label. Drag cards between columns on the board.'}</p>
         </div>
         <div className="row">
           <div className="segmented" role="group" aria-label="View">
@@ -104,6 +137,15 @@ export default function TasksPage({ labels, lists, refresh, version, goTo }: Pag
         <button className="btn small ghost" onClick={() => goTo('labels')}>🏷️ Manage labels</button>
         {filtersOn && (
           <button className="btn small ghost" onClick={() => { setStatuses([]); setLabelIds([]); setQ('') }}>Clear filters</button>
+        )}
+        <span className="spacer" />
+        {activeFilter ? (
+          <>
+            {changed && <button className="btn small" onClick={updateFilter}>💾 Save changes</button>}
+            <button className="btn small ghost" onClick={removeFilter}>Remove saved filter</button>
+          </>
+        ) : (
+          <button className="btn small" onClick={saveFilter} title="Pin these filters in the sidebar">⭐ Save filter</button>
         )}
       </div>
 

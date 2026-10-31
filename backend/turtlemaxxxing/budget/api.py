@@ -1,5 +1,5 @@
 """HTTP API for the budget: /api/accounts, /api/rules, /api/entries,
-/api/cashflow, /api/calendar and /api/reviews.
+/api/cashflow, /api/calendar, /api/reviews and /api/import.
 
 All money is integer cents. The frontend converts to and from dollars.
 """
@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, model_validator
 
 from ..deps import get_db, get_today
-from . import ledger, reviews
+from . import csv_import, ledger, reviews
 from .schedule import FREQUENCIES
 
 router = APIRouter(prefix="/api")
@@ -381,3 +381,52 @@ def resolve_subscription(
 def dismiss_review(review_id: int, conn=Depends(get_db), today=Depends(get_today)):
     _review_errors(lambda: reviews.dismiss(conn, review_id, today))
     return {"ok": True}
+
+
+# ---------------------------------------------------------------- CSV import
+
+
+class ImportMapping(BaseModel):
+    date_col: str | None = None
+    description_col: str | None = None
+    amount_col: str | None = None
+    debit_col: str | None = None
+    credit_col: str | None = None
+    date_format: Literal["auto", *csv_import.DATE_FORMATS] = "auto"  # type: ignore[valid-type]
+    flip_sign: bool = False
+
+
+class ImportIn(BaseModel):
+    """The CSV's text travels in the request body. It's read in memory and never saved."""
+
+    account_id: int
+    csv_text: str = Field(min_length=1, max_length=2_000_000)
+    mapping: ImportMapping = ImportMapping()
+
+
+class ImportApplyIn(ImportIn):
+    skip_rows: list[int] = []
+
+
+def _plan(body: ImportIn, conn: sqlite3.Connection, today: date) -> csv_import.Plan:
+    try:
+        return csv_import.plan(
+            conn, body.account_id, body.csv_text, csv_import.Mapping(**body.mapping.model_dump()), today
+        )
+    except LookupError:
+        raise _not_found("account")
+    except csv_import.CsvError as err:
+        raise HTTPException(status_code=422, detail=str(err))
+
+
+@router.post("/import/preview")
+def import_preview(body: ImportIn, conn=Depends(get_db), today=Depends(get_today)):
+    """What importing this file would do. Changes nothing."""
+    return csv_import.plan_out(_plan(body, conn, today))
+
+
+@router.post("/import/apply")
+def import_apply(body: ImportApplyIn, conn=Depends(get_db), today=Depends(get_today)):
+    """Recomputes the preview from the same file and applies it, minus skip_rows."""
+    the_plan = _plan(body, conn, today)
+    return csv_import.apply(conn, body.account_id, the_plan, set(body.skip_rows))

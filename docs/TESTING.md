@@ -33,6 +33,9 @@ This is a **standard operating procedure.** It applies to every change, whether 
 | **Check-ins and subscription reviews** do what they say | `tests/test_budget_api.py::test_balance_checkin_creates_adjustment`, `::test_subscription_review_keep_cancel_and_change_price` |
 | **A task is Private** if flagged Private **or** tagged with an auto-Private label, and turning auto-Private on applies to existing tasks immediately | `tests/test_tasks_api.py::test_private_flag_makes_a_task_private`, `::test_auto_private_label_makes_tagged_tasks_private`, `::test_turning_on_auto_private_applies_to_existing_tasks` |
 | **Upgrades keep your data** and back up the old database first | `tests/test_migrations.py::test_upgrade_from_v1_keeps_data_and_backs_up` |
+| **CSV import never double-counts:** importing the same or an overlapping file again changes nothing, and rows already marked paid by hand are linked, not added | `tests/test_csv_import.py::test_importing_the_same_file_twice_changes_nothing`, `::test_overlapping_files_only_add_the_new_rows`, `::test_rows_marked_paid_by_hand_are_linked_not_added_again` |
+| **CSV preview changes nothing**, and **the file itself is never stored** (rows you skip leave no trace) | `tests/test_csv_import.py::test_preview_changes_nothing`, `::test_the_file_itself_is_never_stored` |
+| **Imported balances add up** to the cent, including a bill paid early not being posted again on its due date | `tests/test_csv_import.py::test_apply_confirms_matches_adds_the_rest_and_balances_add_up` |
 | **Reminders** fire on time, snooze and dismiss, and never nag about finished tasks | `tests/test_tasks_api.py::test_reminders_fire_dismiss_and_snooze`, `::test_done_tasks_do_not_remind` |
 
 *Coming with later milestones (from [the separation test](testing/SEPARATION_TEST.md)):* Private items never reach any AI path or MCP tool (M3, built on the `is_private` rule tested above), blocked file types are refused (M3), and the work-account warning (M4). Each lands with its tests in the same milestone, or it doesn't land.
@@ -42,7 +45,8 @@ This is a **standard operating procedure.** It applies to every change, whether 
 | Layer | What | Files |
 |---|---|---|
 | **Unit** | Pure logic with no database, e.g. which dates a schedule hits, including month ends and leap years | `test_schedule.py` |
-| **End-to-end API** | The real app with a temporary database, called over HTTP. A movable `clock` fixture lets tests jump weeks ahead to watch paydays, bills and reviews happen | `test_budget_api.py`, `test_demo.py` |
+| **End-to-end API** | The real app with a temporary database, called over HTTP. A movable `clock` fixture lets tests jump weeks ahead to watch paydays, bills and reviews happen | `test_budget_api.py`, `test_tasks_api.py`, `test_csv_import.py`, `test_demo.py` |
+| **Migrations** | Upgrading an older database keeps its data and backs it up first | `test_migrations.py` |
 | **Privacy and security** | The guarantees in §2: network guard, host and origin checks, data location | `test_privacy.py`, `test_local_security.py` |
 | **Config and CLI** | Settings validation, the port scan, command-line behavior | `test_config_and_cli.py` |
 | **Manual walkthrough** | A person or agent uses the real UI in a browser (§5) | — |
@@ -80,7 +84,8 @@ Both must pass. Run one file with `uv run --directory backend pytest -q tests/te
 
 1. Start the demo: `uv run --directory backend turtlemaxxxing --demo`. It uses fictional data in a throwaway folder.
 2. Open http://turtle.localhost:8765 (or http://127.0.0.1:8765).
-3. Visit **every page** you touched, and at least **Cash flow**, **Bills calendar** and **Review inbox**. Do one real action on each: mark a bill paid, resolve a check-in, add a rule with a split.
+3. Visit **every page** you touched, and at least **Cash flow**, **Calendar** and **Review inbox**. Do one real action on each: mark a bill paid, resolve a check-in, add a rule with a split.
+   For CSV import, use a small **made-up** CSV whose dates fit the demo's month. Never use a real bank export for testing.
 4. Check **phone width** (about 375px) and **dark mode**.
 5. Open developer tools → **Network** and reload. **Every request must go to the app's own address.** Any other domain (fonts, analytics, CDNs) is a bug.
 6. Note what you checked in the commit or PR description.
@@ -107,11 +112,13 @@ Real examples, kept to show the process works and why the rules exist:
 | Rule dates before an account's "balance as of" date were counted on top of a balance that already included them | Manual walkthrough with demo data: the checking balance didn't match a hand calculation | `test_rule_dates_before_the_opening_balance_are_not_double_counted` |
 | In the month an account was opened, the cash-flow chart started at $0 and never showed the starting balance | Manual walkthrough: the chart's shape was wrong | `test_cashflow_shows_starting_balance_in_the_opening_month` |
 | The review inbox briefly showed "All caught up!" while still loading, even with items waiting | Manual walkthrough | Manual check only (frontend tests are a known gap, see §8) |
+| One unreadable row (a "Pending" line) made CSV date detection reject the whole file | The CSV import tests, before it shipped | `test_date_format_detection` ("one junk row doesn't sink the file") |
 
 ## 8. Known gaps (honest list)
 
 - **No automated frontend tests yet.** The UI is checked by type-checking, the build, and manual walkthroughs. Planned: component tests for money input and forms.
-- **Migrations:** the upgrade from v1 → current is tested. Each new migration should extend `test_migrations.py` with data that touches its tables.
+- **Migrations:** upgrades from v1 and v2 → current are tested. Each new migration should extend `test_migrations.py` with data that touches its tables.
+- **CSV formats:** tested with common US layouts (one amount column, debit/credit columns, a preamble above the header, card statements with positive purchases). Other banks' layouts will turn up in real use; each one gets a fictional test case when it does.
 - **Board drag-and-drop** is checked manually. In-page drag events were verified in the walkthrough, but there's no automated UI test yet.
 - **Time zones:** "today" is the computer's local date. Travel across time zones isn't tested.
 - **The separation test is manual** and depends on each person's machine.

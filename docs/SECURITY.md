@@ -39,6 +39,7 @@ This guide explains, in plain language, how TurtleMaxxxing keeps your work and p
 | Private items | **Nowhere** | Never |
 | Calendar events you approve | Your **one chosen personal calendar** | Only after you approve each one |
 | Calendar, email, statement data | Read from services **you connected** | Only for connectors you turned on |
+| A bank CSV you import | Read **in memory on your computer**; the file itself is never saved, only the transactions you import | Only when you import one. The app never logs in to your bank. |
 | Passwords, tokens, API keys | Your computer's **secure keychain** (Windows Credential Manager) | Never in chat, files or the database |
 | Anything else | **Nowhere.** No telemetry, no accounts, no servers of ours | Never |
 

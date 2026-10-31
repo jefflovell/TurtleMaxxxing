@@ -21,7 +21,7 @@ Open **Money rules** and check the amount, schedule and first date.
 - **Wrong split:** stop the rule and create a new one with the right split, starting on the next payday.
 
 ## 4. Was something marked paid that wasn't?
-On the **Bills calendar**, paid items show ✓ and are struck through. Paid amounts count toward the balance on their date either way; "paid" just records that you confirmed it.
+On the **Calendar**, paid items show ✓ and are struck through. Paid amounts count toward the balance on their date either way; "paid" just records that you confirmed it.
 
 ## 5. Still wrong? Gather facts (no data leaves your computer)
 For agents: compare `GET /api/accounts` (balance), `GET /api/entries?start=...&end=...&account_id=...` (ledger) and `GET /api/rules`. Explain the difference to the user in plain language. **Don't paste their financial data anywhere else.**

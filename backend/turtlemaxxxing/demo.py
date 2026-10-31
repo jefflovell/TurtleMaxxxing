@@ -5,6 +5,7 @@ this data. It never touches your real data folder. All names and amounts are
 made up.
 """
 
+import json
 import sqlite3
 from datetime import date, datetime, timedelta
 
@@ -62,6 +63,15 @@ def seed_tasks(conn: sqlite3.Connection, today: date, now: datetime) -> None:
         "INSERT INTO task_reminders (task_id, remind_at) VALUES (?, ?)",
         (ids["Call the plumber about the leak"], (now - timedelta(minutes=5)).isoformat(timespec="minutes")),
     )
+    # Saved filters pinned in the sidebar.
+    for position, (name, emoji, filters) in enumerate([
+        ("Fires", "🔥", {"label_ids": [label["critical"], label["urgent"]], "statuses": ["todo", "in_progress", "blocked"]}),
+        ("Home reno board", "🔨", {"scope": reno, "view": "board"}),
+    ]):
+        conn.execute(
+            "INSERT INTO saved_filters (name, emoji, filters, position) VALUES (?, ?, ?, ?)",
+            (name, emoji, json.dumps(filters), position),
+        )
     conn.commit()
 
 

@@ -255,7 +255,7 @@ There's no reliable current market-share data for calendars, so this is ranked b
 - ✅ Review inbox: balance check-ins (scheduled, plus "check balance now") and "still paying for this?" subscription reviews.
 - ✅ `AGENTS.md`, module guides, the `turtle-help` skill (troubleshoot, change, update, undo) and the first troubleshooting guides (§8a).
 - ✅ Automated tests, including **T5 no network by default** (`backend/tests/test_privacy.py`).
-- ➡️ **Moved to M2:** CSV import that matches transactions to expected entries.
+- ➡️ **Moved to M2:** CSV import that matches transactions to expected entries. ✅ Done in M2b.
 - ✅ First version of [`docs/SETUP_PROMPT.md`](docs/SETUP_PROMPT.md), plus the "I like turtles" Start-menu shortcut (`scripts/start-turtle.ps1`). Dry-run on the dev machine: fresh clone → install → tests → port scan → start script → shortcut.
 - ⬜ Run the setup prompt end to end on a clean Windows user account (a real `winget` install and a real browser launch), ideally the first user's own PC.
 - ✅ Public CI on every push: [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
@@ -270,10 +270,12 @@ There's no reliable current market-share data for calendars, so this is ranked b
 - ✅ Lists for grouping tasks into projects (plus an Inbox).
 - ✅ 🔒 Private flag, with one tested rule (`is_private`) for M3's AI gate to use.
 
-*M2b, next:*
-- Tasks on the calendar view (alongside bills).
-- Saved filters pinned in the sidebar.
-- CSV import (moved from M1): match bank or card transactions to expected entries.
+*M2b, done:*
+- ✅ Tasks on the calendar view, alongside bills (each can be shown or hidden). Click a day to add a task on it.
+- ✅ Saved filters pinned in the sidebar (list, statuses, labels, search and list/board view).
+- ✅ CSV import (moved from M1): matches bank or card rows to expected entries (exact amounts, or close amounts for bills that vary), adds the rest, skips anything already imported. Preview first; the file is never stored.
+
+*M2c, next:*
 - Contacts list (e.g. "Mr. Anderson → Smith Agency") so the AI can fill in who and where for appointments.
 
 **M3 — AI via MCP**

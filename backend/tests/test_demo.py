@@ -29,3 +29,13 @@ def test_demo_tasks_fill_every_part_of_the_today_view(conn):
     assert private == ["Prep for client meeting"]
     # A reminder is already due.
     assert [r["task"]["title"] for r in service.due_reminders(conn, now)] == ["Call the plumber about the leak"]
+
+
+def test_demo_saved_filters_are_valid(conn):
+    from turtlemaxxxing.tasks.api import FilterSpec
+
+    demo.seed(conn, date(2026, 11, 20), datetime(2026, 11, 20, 9, 0))
+    rows = conn.execute("SELECT * FROM saved_filters ORDER BY position").fetchall()
+    assert [r["name"] for r in rows] == ["Fires", "Home reno board"]
+    for r in rows:
+        FilterSpec.model_validate_json(r["filters"])

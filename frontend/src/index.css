@@ -264,3 +264,15 @@ textarea { font: inherit; color: inherit; padding: 7px 10px; border-radius: 8px;
   .nav-group { flex-direction: row; flex-wrap: wrap; margin-bottom: 0; }
   .nav-heading { display: none; }
 }
+
+/* ------------------------------------------------------------ M2b: calendar tasks, saved filters, import */
+.spacer { flex: 1; }
+.nav-item.sub { padding-left: 22px; font-size: 0.9rem; }
+.calendar .day .date { background: none; border: 0; padding: 0 2px; cursor: pointer; align-self: flex-start; border-radius: 4px; }
+.calendar .day .date:hover { background: var(--brand-soft); color: var(--text); }
+.calendar .pill.task { border-left: 3px solid var(--brand); }
+.calendar .pill.task.late { border-left-color: var(--critical); }
+.table-wrap { overflow-x: auto; padding: 0; }
+.table-wrap table td, .table-wrap table th { padding: 6px 10px; }
+tr.muted td { color: var(--text-3); }
+details.card > summary { cursor: pointer; font-weight: 600; }

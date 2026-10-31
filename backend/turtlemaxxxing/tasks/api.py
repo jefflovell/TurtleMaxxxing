@@ -155,6 +155,87 @@ def update_list(list_id: int, body: ListPatch, conn=Depends(get_db)):
     return dict(conn.execute("SELECT * FROM lists WHERE id = ?", (list_id,)).fetchone())
 
 
+# ---------------------------------------------------------------- saved filters
+
+
+class FilterSpec(BaseModel):
+    """What the Tasks page shows. Mirrors the toolbar: list, statuses, labels, search, view."""
+
+    scope: Literal["all", "inbox"] | int = "all"
+    statuses: list[Status] = []
+    label_ids: list[int] = []
+    q: str = Field(default="", max_length=100)
+    view: Literal["list", "board"] = "list"
+
+
+class SavedFilterIn(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+    emoji: str | None = Field(default=None, max_length=8)
+    filters: FilterSpec = FilterSpec()
+
+
+class SavedFilterPatch(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=40)
+    emoji: str | None = Field(default=None, max_length=8)
+    filters: FilterSpec | None = None
+    position: float | None = None
+
+
+def _filter_out(conn: sqlite3.Connection, row: sqlite3.Row) -> dict:
+    """Labels deleted since the filter was saved are dropped, so a saved
+    filter never points at something that no longer exists."""
+    spec = FilterSpec.model_validate_json(row["filters"])
+    label_ids = {r["id"] for r in conn.execute("SELECT id FROM labels")}
+    spec.label_ids = [i for i in spec.label_ids if i in label_ids]
+    if isinstance(spec.scope, int) and conn.execute(
+        "SELECT 1 FROM lists WHERE id = ?", (spec.scope,)
+    ).fetchone() is None:
+        spec.scope = "all"
+    return {"id": row["id"], "name": row["name"], "emoji": row["emoji"],
+            "position": row["position"], "filters": spec.model_dump()}
+
+
+def _saved_filter(conn: sqlite3.Connection, filter_id: int) -> dict:
+    row = conn.execute("SELECT * FROM saved_filters WHERE id = ?", (filter_id,)).fetchone()
+    if row is None:
+        raise _not_found("saved filter")
+    return _filter_out(conn, row)
+
+
+@router.get("/filters")
+def list_filters(conn=Depends(get_db)):
+    rows = conn.execute("SELECT * FROM saved_filters ORDER BY position, id").fetchall()
+    return [_filter_out(conn, r) for r in rows]
+
+
+@router.post("/filters", status_code=201)
+def create_filter(body: SavedFilterIn, conn=Depends(get_db)):
+    top = conn.execute("SELECT COALESCE(MAX(position), 0) FROM saved_filters").fetchone()[0]
+    cur = conn.execute(
+        "INSERT INTO saved_filters (name, emoji, filters, position) VALUES (?, ?, ?, ?)",
+        (body.name.strip(), body.emoji, body.filters.model_dump_json(), top + 1),
+    )
+    conn.commit()
+    return _saved_filter(conn, cur.lastrowid)
+
+
+@router.patch("/filters/{filter_id}")
+def update_filter(filter_id: int, body: SavedFilterPatch, conn=Depends(get_db)):
+    _saved_filter(conn, filter_id)
+    for field, value in body.model_dump(exclude_unset=True, exclude_none=True).items():
+        if field == "filters":
+            value = body.filters.model_dump_json()
+        conn.execute(f"UPDATE saved_filters SET {field} = ? WHERE id = ?", (value, filter_id))
+    conn.commit()
+    return _saved_filter(conn, filter_id)
+
+
+@router.delete("/filters/{filter_id}", status_code=204)
+def delete_filter(filter_id: int, conn=Depends(get_db)):
+    conn.execute("DELETE FROM saved_filters WHERE id = ?", (filter_id,))
+    conn.commit()
+
+
 # ---------------------------------------------------------------- tasks
 
 
@@ -255,12 +336,14 @@ def list_tasks(
     inbox: bool = False,
     q: str | None = Query(default=None, max_length=100),
     include_old_done: bool = False,
+    due_from: date | None = None,
+    due_to: date | None = None,
     conn=Depends(get_db),
     today=Depends(get_today),
 ):
     return service.search(
         conn, today, statuses=status, label_ids=label_id, list_id=list_id, inbox=inbox,
-        query=q, include_old_done=include_old_done,
+        query=q, include_old_done=include_old_done, due_from=due_from, due_to=due_to,
     )
 
 

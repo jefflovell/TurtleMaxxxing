@@ -58,9 +58,14 @@ def test_using_the_app_makes_no_outbound_connections(tmp_path, no_network):
         client.post(f"/api/tasks/{task['id']}/move", json={"status": "in_progress"})
         client.post("/api/labels", json={"name": "garden"})
         client.post("/api/lists", json={"name": "Chores"})
+        client.post("/api/filters", json={"name": "Garden", "filters": {"q": "plants"}})
+        csv_body = {"account_id": account["id"], "csv_text": "Date,Description,Amount\n2026-11-15,Pay,10.00\n"}
+        assert client.post("/api/import/preview", json=csv_body).status_code == 200
+        assert client.post("/api/import/apply", json=csv_body).status_code == 200
         for path in ("/api/health", "/api/accounts", "/api/rules", "/api/cashflow",
                      "/api/calendar", "/api/reviews", "/api/tasks", "/api/today",
-                     "/api/labels", "/api/lists", "/api/reminders/due"):
+                     "/api/labels", "/api/lists", "/api/reminders/due", "/api/filters",
+                     "/api/tasks?due_from=2026-11-01&due_to=2026-11-30"):
             assert client.get(path).status_code == 200
     assert no_network == []
 

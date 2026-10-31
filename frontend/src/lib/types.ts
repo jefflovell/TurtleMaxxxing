@@ -150,3 +150,51 @@ export interface DueReminder {
   remind_at: string
   task: Task
 }
+
+export interface FilterSpec {
+  scope: 'all' | 'inbox' | number
+  statuses: TaskStatus[]
+  label_ids: number[]
+  q: string
+  view: 'list' | 'board'
+}
+
+export interface SavedFilter {
+  id: number
+  name: string
+  emoji: string | null
+  position: number
+  filters: FilterSpec
+}
+
+// ---------------------------------------------------------------- CSV import
+// Shapes from backend/turtlemaxxxing/budget/csv_import.py.
+
+export interface ImportMapping {
+  date_col: string | null
+  description_col: string | null
+  amount_col: string | null
+  debit_col: string | null
+  credit_col: string | null
+  date_format: string
+  flip_sign: boolean
+}
+
+export type ImportAction = 'match' | 'match_changed' | 'new' | 'duplicate' | 'before_start' | 'error'
+
+export interface ImportRow {
+  row: number
+  date: string | null
+  description: string
+  amount_cents: number | null
+  action: ImportAction
+  message: string | null
+  match: { description: string; date: string; amount_cents: number; confirmed: boolean } | null
+}
+
+export interface ImportPlan {
+  headers: string[]
+  mapping: ImportMapping
+  counts: Partial<Record<ImportAction, number>>
+  rows: ImportRow[]
+}

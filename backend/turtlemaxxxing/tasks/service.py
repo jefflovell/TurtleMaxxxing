@@ -95,8 +95,13 @@ def search(
     inbox: bool = False,
     query: str | None = None,
     include_old_done: bool = False,
+    due_from: date | None = None,
+    due_to: date | None = None,
 ) -> list[dict]:
-    """Filtered tasks. Labels match ANY of the given ones."""
+    """Filtered tasks. Labels match ANY of the given ones.
+
+    A due-date range (the calendar) includes done tasks of any age, so a
+    past month still shows what got finished."""
     where, args = [], []
     if statuses:
         where.append(f"t.status IN ({','.join('?' * len(statuses))})")
@@ -114,7 +119,13 @@ def search(
     if query:
         where.append("(t.title LIKE ? OR t.notes LIKE ?)")
         args += [f"%{query}%", f"%{query}%"]
-    if not include_old_done:
+    if due_from is not None:
+        where.append("t.due_date >= ?")
+        args.append(due_from.isoformat())
+    if due_to is not None:
+        where.append("t.due_date <= ?")
+        args.append(due_to.isoformat())
+    if not include_old_done and due_from is None and due_to is None:
         cutoff = (today - timedelta(days=DONE_VISIBLE_DAYS)).isoformat()
         where.append("(t.status != 'done' OR substr(t.completed_at, 1, 10) >= ?)")
         args.append(cutoff)

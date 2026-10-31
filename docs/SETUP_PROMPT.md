@@ -106,7 +106,7 @@ STEPS
 
 9. Quick tour (just explain, don't click anything): suggest I start in Accounts (add
    checking, plus any HSA, 401(k), 529 or savings goals), then Money rules (my paycheck
-   with its splits, then bills and subscriptions), then Cash flow and the Bills calendar.
+   with its splits, then bills and subscriptions), then Cash flow and the Calendar.
    Mention the Review inbox for balance check-ins and "still paying for this?" reviews.
    Tip: `uv run --directory backend turtlemaxxxing --demo` shows fictional sample data in
    a throwaway folder if I want to explore first (close the real app before trying it).

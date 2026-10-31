@@ -2,7 +2,8 @@
 // this same computer; the UI never contacts any other server.
 
 import type {
-  Account, Cashflow, DueReminder, Label, LedgerEvent, Review, Rule, Task, TaskList, TaskStatus, TodayView,
+  Account, Cashflow, DueReminder, FilterSpec, ImportMapping, ImportPlan, Label, LedgerEvent, Review, Rule,
+  SavedFilter, Task, TaskList, TaskStatus, TodayView,
 } from './types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -97,6 +98,8 @@ export const api = {
     if (f.q) params.set('q', f.q)
     return request<Task[]>(`/tasks?${params}`)
   },
+  tasksDue: (from: string, to: string) =>
+    request<Task[]>(`/tasks?${new URLSearchParams({ due_from: from, due_to: to })}`),
   createTask: (body: TaskInput) => post<Task>('/tasks', body),
   updateTask: (id: number, body: Partial<TaskInput>) => patch<Task>(`/tasks/${id}`, body),
   moveTask: (id: number, status: TaskStatus, beforeId: number | null) =>
@@ -113,6 +116,21 @@ export const api = {
   createList: (name: string, emoji?: string) => post<TaskList>('/lists', { name, emoji }),
   updateList: (id: number, body: Partial<{ name: string; emoji: string; archived: boolean }>) =>
     patch<TaskList>(`/lists/${id}`, body),
+
+  filters: () => request<SavedFilter[]>('/filters'),
+  createFilter: (name: string, filters: FilterSpec, emoji?: string) =>
+    post<SavedFilter>('/filters', { name, emoji, filters }),
+  updateFilter: (id: number, body: Partial<{ name: string; emoji: string; filters: FilterSpec }>) =>
+    patch<SavedFilter>(`/filters/${id}`, body),
+  deleteFilter: (id: number) => del(`/filters/${id}`),
+
+  // The CSV's text goes to the backend on this computer, which reads it in memory and never saves it.
+  importPreview: (accountId: number, csvText: string, mapping: Partial<ImportMapping>) =>
+    post<ImportPlan>('/import/preview', { account_id: accountId, csv_text: csvText, mapping }),
+  importApply: (accountId: number, csvText: string, mapping: Partial<ImportMapping>, skipRows: number[]) =>
+    post<{ confirmed: number; added: number; skipped: number }>('/import/apply', {
+      account_id: accountId, csv_text: csvText, mapping, skip_rows: skipRows,
+    }),
 
   dueReminders: () => request<DueReminder[]>('/reminders/due'),
   dismissReminder: (id: number) => post(`/reminders/${id}/dismiss`),

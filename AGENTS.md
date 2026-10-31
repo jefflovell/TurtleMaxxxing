@@ -6,7 +6,8 @@ You're helping someone run, fix, update or change their own TurtleMaxxxing insta
 
 A free, open-source, **local-first** personal assistant and project manager. Built so far:
 - **Tasks (M2a):** kanban status, user-defined labels with favorites and auto-Private, lists, reminders, a Today home screen, list and board views.
-- **Budgeting (M1):** accounts, recurring money rules with paycheck splits, auto-posted ledger entries, a cash-flow chart, a bills calendar, and a review inbox.
+- **M2b:** a calendar with tasks and bills together, saved filters pinned in the sidebar, and CSV import that matches bank rows to expected entries.
+- **Budgeting (M1):** accounts, recurring money rules with paycheck splits, auto-posted ledger entries, a cash-flow chart, a review inbox.
 
 See `PLAN.md` for the roadmap.
 
@@ -25,8 +26,8 @@ See `PLAN.md` for the roadmap.
 | Path | What it is | Guide |
 |---|---|---|
 | `backend/` | Python API server (FastAPI + SQLite), managed with `uv` | [backend/AGENTS.md](backend/AGENTS.md) |
-| `backend/turtlemaxxxing/budget/` | Budget logic: schedules, ledger, reviews, API | [budget/AGENTS.md](backend/turtlemaxxxing/budget/AGENTS.md) |
-| `backend/turtlemaxxxing/tasks/` | Tasks, labels, lists, reminders, Today view. **Owns the Private rule.** | [tasks/AGENTS.md](backend/turtlemaxxxing/tasks/AGENTS.md) |
+| `backend/turtlemaxxxing/budget/` | Budget logic: schedules, ledger, reviews, CSV import, API | [budget/AGENTS.md](backend/turtlemaxxxing/budget/AGENTS.md) |
+| `backend/turtlemaxxxing/tasks/` | Tasks, labels, lists, reminders, saved filters, Today view. **Owns the Private rule.** | [tasks/AGENTS.md](backend/turtlemaxxxing/tasks/AGENTS.md) |
 | `frontend/` | React + TypeScript UI (Vite) | [frontend/AGENTS.md](frontend/AGENTS.md) |
 | `docs/` | Security guide, testing SOP, setup prompt and notes, troubleshooting | — |
 | `scripts/start-turtle.ps1` | What the "I like turtles" shortcut runs: starts the app if needed, then opens the browser | — |

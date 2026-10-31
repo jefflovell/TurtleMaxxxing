@@ -231,3 +231,59 @@ def test_clearing_a_due_date_requires_clearing_the_time(client):
     assert client.patch(f"/api/tasks/{task['id']}", json={"due_date": None}).status_code == 422
     res = client.patch(f"/api/tasks/{task['id']}", json={"due_date": None, "due_time": None})
     assert res.status_code == 200 and res.json()["due_date"] is None
+
+
+# ---------------------------------------------------------------- calendar
+
+
+def test_calendar_range_includes_finished_tasks_of_any_age(client, clock):
+    make_task(client, "Pay the water bill", due_date="2026-11-03")
+    make_task(client, "Book the dentist", due_date="2026-11-20")
+    make_task(client, "December thing", due_date="2026-12-02")
+    make_task(client, "No date")
+    done = make_task(client, "Old finished one", due_date="2026-11-02")
+    client.patch(f"/api/tasks/{done['id']}", json={"status": "done"})
+    # Weeks later, the default list has dropped it, but the calendar still shows November's work.
+    clock.today = date(2026, 12, 20)
+    assert "Old finished one" not in titles(client.get("/api/tasks").json())
+    month = client.get("/api/tasks", params={"due_from": "2026-11-01", "due_to": "2026-11-30"}).json()
+    assert sorted(titles(month)) == ["Book the dentist", "Old finished one", "Pay the water bill"]
+
+
+# ---------------------------------------------------------------- saved filters
+
+
+def test_saved_filters_round_trip(client):
+    work = labels(client)["work"]["id"]
+    res = client.post("/api/filters", json={
+        "name": "Critical work", "emoji": "🔥",
+        "filters": {"statuses": ["todo", "blocked"], "label_ids": [work], "view": "board"},
+    })
+    assert res.status_code == 201
+    saved = res.json()
+    assert saved["filters"] == {"scope": "all", "statuses": ["todo", "blocked"], "label_ids": [work],
+                                "q": "", "view": "board"}
+    client.post("/api/filters", json={"name": "Search", "filters": {"q": "plumber"}})
+    assert [f["name"] for f in client.get("/api/filters").json()] == ["Critical work", "Search"]
+
+    client.patch(f"/api/filters/{saved['id']}", json={"name": "Work fires", "filters": {"scope": "inbox"}})
+    updated = client.get("/api/filters").json()[0]
+    assert updated["name"] == "Work fires" and updated["filters"]["scope"] == "inbox"
+
+    assert client.delete(f"/api/filters/{saved['id']}").status_code == 204
+    assert [f["name"] for f in client.get("/api/filters").json()] == ["Search"]
+
+
+def test_saved_filters_forget_deleted_labels(client):
+    garden = client.post("/api/labels", json={"name": "garden"}).json()
+    work = labels(client)["work"]["id"]
+    client.post("/api/filters", json={"name": "Weekend", "filters": {"label_ids": [garden["id"], work]}})
+    client.delete(f"/api/labels/{garden['id']}")
+    filters = client.get("/api/filters").json()[0]["filters"]
+    assert filters["label_ids"] == [work]
+
+
+def test_saved_filter_validation(client):
+    assert client.post("/api/filters", json={"name": ""}).status_code == 422
+    assert client.post("/api/filters", json={"name": "x", "filters": {"statuses": ["someday"]}}).status_code == 422
+    assert client.patch("/api/filters/999", json={"name": "x"}).status_code == 404

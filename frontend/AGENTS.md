@@ -10,12 +10,12 @@ React 19, TypeScript, Vite and Recharts. Plain CSS with theme tokens (no CSS fra
 
 | File | What it does |
 |---|---|
-| `src/App.tsx` | Layout, sidebar navigation, shared data (accounts, rules, review count). `refresh()` reloads everything after a change. |
+| `src/App.tsx` | Layout, sidebar navigation (including saved filters), shared data (accounts, rules, labels, lists, saved filters, review count). `refresh()` reloads everything after a change. |
 | `src/lib/api.ts` | **The only place that calls the backend.** Every call goes to `/api` on this computer. |
 | `src/lib/types.ts` | Data shapes, matching `backend/turtlemaxxxing/budget/api.py`. |
 | `src/lib/format.ts` | Money (cents ↔ dollars), dates, labels for frequencies and account types. |
 | `src/index.css` | Theme tokens (light and dark) and all styles. Change colors here. |
-| `src/pages/*.tsx` | One file per screen. Plan: Today (home), Tasks (list and board), Labels. Money: Cash flow, Bills calendar, Review inbox, Money rules, Accounts. |
+| `src/pages/*.tsx` | One file per screen. Plan: Today (home), Tasks (list and board; also opened from a saved filter), Calendar (tasks and bills), Labels. Money: Cash flow, Review inbox, Import CSV, Money rules, Accounts. |
 | `src/components/*.tsx` | Shared pieces: task editor, task row, quick add, label chips and picker (`TaskBits.tsx`), reminder pop-ups, month picker, rule form, status chip, empty state. |
 | `src/lib/tasks.ts` | Task status names and icons. |
 
@@ -34,6 +34,8 @@ React 19, TypeScript, Vite and Recharts. Plain CSS with theme tokens (no CSS fra
 - Show 🔒 for any task where `is_private` is true. Never decide privacy in the UI; the backend's `is_private` is the source of truth.
 - Label colors come from `--label-*` tokens in `index.css` (a color-blind-safe palette). Labels show a colored dot, and their text stays in normal text color.
 - Board drag-and-drop uses the browser's native drag events. Keyboard and touch users change status in the task editor instead.
+- **Saved filters:** clicking one sets `activeFilter` in `App.tsx`, and the Tasks page is remounted (its `key`) so it starts from that filter. The filter's shape is `FilterSpec` in `types.ts`, matching `FilterSpec` in `backend/turtlemaxxxing/tasks/api.py`.
+- **CSV import** sends the file's text to the backend on this computer; it is never saved. Preview and import send the *same* column choices, so the import does exactly what the preview showed. In those choices `""` means "no such column" and `null` means "guess".
 
 ## Check your work
 ```bash

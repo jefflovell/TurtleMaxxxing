@@ -15,7 +15,8 @@ Python 3.12+, FastAPI and SQLite (Python's built-in `sqlite3`, no ORM). Managed 
 | `turtlemaxxxing/db.py` | Connections and migrations. Backs up the database before applying new migrations. |
 | `turtlemaxxxing/deps.py` | Per-request DB connection, "today", and the daily tick (auto-post entries + open due reviews). |
 | `turtlemaxxxing/migrations/` | Numbered SQL files. **Never edit one that has shipped;** add a new file instead. |
-| `turtlemaxxxing/budget/` | The budget feature. See its own `AGENTS.md`. |
+| `turtlemaxxxing/budget/` | The budget feature, including CSV import. See its own `AGENTS.md`. |
+| `turtlemaxxxing/tasks/` | Tasks, labels, lists, reminders and saved filters. See its own `AGENTS.md`. |
 | `tests/` | pytest suite. `conftest.py` gives a temp database and a movable `clock`. |
 
 ## Common changes
