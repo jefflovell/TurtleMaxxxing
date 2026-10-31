@@ -23,7 +23,8 @@ A free, open-source, **local-first personal assistant and project manager** that
 | ✅ | **M0: Guardrails** | The [security guide](docs/SECURITY.md) and a [separation test](docs/testing/SEPARATION_TEST.md) to check your AI tools can't see your work stuff |
 | ✅ | **M1: App + budget** | Accounts, paychecks with splits, bills and subscriptions that post themselves, a cash-flow chart, balance check-ins, the one-paste installer |
 | ✅ | **M2: Tasks and people** | Tasks with kanban status, your own labels, lists, reminders, a Today screen, a calendar with tasks and bills, saved filters, bank CSV import, contacts |
-| 🔜 | **M3: AI, your way** | Connect your own Claude. Say *"remind me to review the proposal by Friday noon"* and it proposes the task for you to approve. Private items never reach it, and every access is logged. |
+| 🔜 | **M2.5: Free for everyone** | Install, update and get help with a double-click installer, **no paid Claude plan needed** (today's installer uses Claude Code, which is paid) |
+| ⬜ | **M3: AI, your way** | Connect your own Claude (the free plan works). Say *"remind me to review the proposal by Friday noon"* and it proposes the task for you to approve. Private items never reach it, and every access is logged. |
 | ⬜ | **M4: Connectors** | Read your calendars and bill-alert emails (only the ones you turn on) |
 | ⬜ | **M5: Phone** | Use it from your phone over your own private network |
 | ⬜ | **M6: Pick your AI** | A chat panel, with fully local models (Ollama) or the provider you choose |
@@ -48,6 +49,8 @@ This page is on **GitHub**, a website where people share the files that make up 
 | A **personal** Windows 10 or 11 computer | The app runs here. **Never use a work computer.** | — |
 | The **Claude desktop app** | Claude does the installing for you | Free download |
 | A **Claude account on a paid plan** | Installing uses *Claude Code*, which is included in all paid Claude plans but not the free one. See [Claude's plans](https://claude.com/pricing). | Paid plan |
+
+**No paid Claude plan?** A free installer is being built right now ([M2.5 on the roadmap](#roadmap)). Until then, the [by-hand install](#install-by-hand-for-the-technical) works without any Claude account.
 
 Mac or Linux? The app itself runs there, but the guided install is Windows-only for now. See [Install by hand](#install-by-hand-for-the-technical).
 

@@ -301,6 +301,7 @@ Bump one size up for anything touching money calculations or the security guard.
 | Tasks, labels and favorites, lists and Inbox, reminders, Today screen, list and board views, Private flag | M2a |
 | Calendar (tasks and bills), saved filters, CSV import | M2b |
 | Contacts, people on tasks | M2c |
+| Free setup: installer, updater, "check my install", release bundles | M2.5 |
 | AI via MCP, quick capture, AI gate, audit log, approval inbox | M3 |
 | Calendar and email connectors, Sheets export | M4 |
 | Phone access, mobile layout | M5 |
