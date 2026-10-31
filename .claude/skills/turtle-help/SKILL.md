@@ -34,6 +34,8 @@ Pick the matching action below.
 6. Offer to commit with a clear message. **Do not push** unless they ask.
 
 ## 3. Update to the latest version
+**Easiest, for any install:** run `powershell -ExecutionPolicy Bypass -File scripts\update.ps1` (the "Update TurtleMaxxxing" shortcut). Release installs download, verify, swap, re-test and roll back on failure; Git installs do the steps below. Explain what it printed. Or by hand, for a Git install:
+
 1. `git status` must be clean. If they have local changes, ask before doing anything.
 2. `git pull`
 3. `uv sync --directory backend` and `npm install --prefix frontend`, then `npm run build --prefix frontend`.

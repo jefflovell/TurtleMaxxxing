@@ -1,0 +1,81 @@
+# Builds the release ZIP (app + screens already built) that the free installer uses.
+#
+# - Run it by hand (Actions tab > Release > Run workflow) to build a ZIP you can
+#   download from the run's artifacts. Nothing is published.
+# - Pushing a version tag (e.g. v0.2.0) builds the same ZIP and publishes it as a
+#   GitHub Release, which the "Update TurtleMaxxxing" shortcut downloads.
+#
+# Only the publish step can write to the repo, using GitHub's built-in token.
+# No other secrets are used.
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    name: Build the release ZIP
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Tag matches the app version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          $version = (uv run --directory backend python -c "import turtlemaxxxing; print(turtlemaxxxing.__version__)").Trim()
+          if ("v$version" -ne "${{ github.ref_name }}") { throw "Tag ${{ github.ref_name }} doesn't match the app version $version" }
+
+      - name: Tests pass
+        run: |
+          uv sync --locked --directory backend
+          uv run --directory backend pytest -q
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+
+      - name: Build
+        run: scripts\build-bundle.ps1 -OutDir bundle-out
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-zip
+          path: bundle-out/
+
+  publish:
+    name: Publish the GitHub Release
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: bundle
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # to create the release; nothing else
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-zip
+          path: bundle-out
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" bundle-out/* \
+            --repo "${{ github.repository }}" \
+            --title "TurtleMaxxxing ${{ github.ref_name }}" \
+            --notes "Download **TurtleMaxxxing-*.zip** below, unzip it, and double-click **Install TurtleMaxxxing.cmd**. Already installed? Use **Update TurtleMaxxxing** in your Start menu. The .sha256 file is the ZIP's fingerprint, which the updater checks."

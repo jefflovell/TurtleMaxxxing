@@ -1,5 +1,7 @@
 # One-paste setup 🐢
 
+> **No paid Claude plan? You don't need this page.** The free [double-click installer](INSTALL.md) does the same thing. This prompt is an optional extra for people with Claude Code (included in Claude's paid plans).
+
 Install TurtleMaxxxing by pasting one prompt into **Claude Code**. Claude explains each step, asks before installing anything, and checks its own work at the end. It takes about 15–20 minutes, mostly waiting on downloads.
 
 ## Before you start
@@ -125,7 +127,8 @@ STEPS
 ## After setup
 - **Start:** type **I like turtles** in Windows search, or use your bookmark.
 - **Stop:** close the minimized "TurtleMaxxxing" window.
-- **Update, fix or change something:** open the install folder in Claude Code and say what you want ("update TurtleMaxxxing", "the app won't start", "add a field to bills"). See [troubleshooting](troubleshooting/README.md).
+- **Update:** Start menu → TurtleMaxxxing → **Update TurtleMaxxxing** (it runs `git pull` for an install made this way), or say "update TurtleMaxxxing" in Claude Code.
+- **Fix or change something:** open the install folder in Claude Code and say what you want ("the app won't start", "add a field to bills"). See [troubleshooting](troubleshooting/README.md).
 - **Uninstall:** delete the install folder, the "I like turtles" Start-menu shortcut, and, if you also want your data gone, `%LOCALAPPDATA%\TurtleMaxxxing`.
 
 ## Prefer to do it by hand?

@@ -1,0 +1,3 @@
+# Windows scripts keep Windows line endings everywhere, including release ZIPs.
+*.cmd text eol=crlf
+*.ps1 text eol=crlf

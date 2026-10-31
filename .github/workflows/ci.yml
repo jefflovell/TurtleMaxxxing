@@ -72,3 +72,68 @@ jobs:
 
       - name: Type-check and build
         run: npm run build --prefix frontend
+
+  installer:
+    # The free install path (M2.5), run exactly as a user would, but unattended:
+    # Windows PowerShell 5.1, the real release ZIP, a clean folder.
+    name: Installer and updater (Windows)
+    runs-on: windows-latest
+    env:
+      # Keep everything inside the runner's temp folder.
+      TURTLE_DATA_DIR: ${{ runner.temp }}\turtle-data
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build the release ZIP (committed files only)
+        run: scripts\build-bundle.ps1 -OutDir "$env:RUNNER_TEMP\bundle"
+
+      - name: Install from the ZIP
+        run: |
+          Expand-Archive (Get-Item "$env:RUNNER_TEMP\bundle\TurtleMaxxxing-*.zip").FullName "$env:RUNNER_TEMP\unzipped"
+          & "$env:RUNNER_TEMP\unzipped\TurtleMaxxxing\scripts\setup.ps1" -Yes -NoStart `
+            -InstallDir "$env:RUNNER_TEMP\install" -StartMenu "$env:RUNNER_TEMP\startmenu"
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          foreach ($lnk in 'I like turtles.lnk', 'TurtleMaxxxing\Update TurtleMaxxxing.lnk', 'TurtleMaxxxing\Check my TurtleMaxxxing install.lnk') {
+            if (-not (Test-Path "$env:RUNNER_TEMP\startmenu\$lnk")) { throw "missing shortcut $lnk" }
+          }
+
+      - name: Start it and check it answers
+        run: |
+          & "$env:RUNNER_TEMP\install\scripts\start-turtle.ps1" -NoOpen
+          & "$env:RUNNER_TEMP\install\scripts\check-install.ps1" -NoClipboard
+
+      - name: Update over the running app
+        run: |
+          $zip = (Get-Item "$env:RUNNER_TEMP\bundle\TurtleMaxxxing-*.zip").FullName
+          & "$env:RUNNER_TEMP\install\scripts\update.ps1" -FromZip $zip -Force -Yes
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if (-not (Test-Path "$env:RUNNER_TEMP\install.previous")) { throw 'previous version was not kept' }
+
+      - name: A broken release is rolled back
+        run: |
+          $broken = "$env:RUNNER_TEMP\broken"
+          Copy-Item -Recurse "$env:RUNNER_TEMP\unzipped\TurtleMaxxxing" $broken
+          Set-Content "$broken\VERSION" '9.9.9' -NoNewline
+          Set-Content "$broken\backend\tests\test_zz_broken.py" "def test_this_release_is_broken():`n    assert False`n"
+          $before = Get-Content "$env:RUNNER_TEMP\install\VERSION"
+          & "$env:RUNNER_TEMP\install\scripts\update.ps1" -FromFolder $broken -Yes
+          if ($LASTEXITCODE -eq 0) { throw 'a broken release was accepted' }
+          if ((Get-Content "$env:RUNNER_TEMP\install\VERSION") -ne $before) { throw 'the previous version was not restored' }
+          & "$env:RUNNER_TEMP\install\scripts\start-turtle.ps1" -NoOpen
+          Write-Output 'Rolled back and running.'

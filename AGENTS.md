@@ -34,6 +34,11 @@ See `PLAN.md` for the roadmap.
 | `docs/` | Security guide, testing SOP, setup prompt and notes, troubleshooting | — |
 | `docs/BACKLOG.md` | QA / UAT revision requests: bugs and change requests from testing, with priority, complexity and status. **Requesters by alias only.** | `.claude/skills/backlog/` |
 | `scripts/start-turtle.ps1` | What the "I like turtles" shortcut runs: starts the app if needed, then opens the browser | — |
+| `Install TurtleMaxxxing.cmd`, `scripts/setup.ps1` | The free double-click installer (M2.5). Same steps and guardrails as the setup prompt. `-Yes` runs it unattended (CI). | [docs/INSTALL.md](docs/INSTALL.md) |
+| `scripts/update.ps1` | "Update TurtleMaxxxing": release installs download, verify, swap and re-test, **rolling back on failure**; Git installs `git pull`. | [docs/INSTALL.md](docs/INSTALL.md) |
+| `scripts/check-install.ps1` | "Check my TurtleMaxxxing install": a privacy-safe report for getting help (**never** reads the database) | [docs/HELP_PROMPT.md](docs/HELP_PROMPT.md) |
+| `scripts/build-bundle.ps1` | Builds the release ZIP (committed files + built screens + `VERSION`). Used by CI and `.github/workflows/release.yml`. | — |
+| `scripts/turtle-common.ps1` | Helpers shared by the scripts above. **Keep these scripts ASCII-only** (Windows PowerShell 5.1 misreads other characters). | — |
 | `scripts/make_art.py` | Redraws the README banner and the link-preview card in `assets/` (standard library only) | — |
 | `docs/troubleshooting/` | Step-by-step fixes an agent can run | [index](docs/troubleshooting/README.md) |
 | `.claude/skills/turtle-help/` | Claude Code skill: troubleshoot, change, update, undo | — |
@@ -53,6 +58,9 @@ See `PLAN.md` for the roadmap.
 | Lint the frontend | `npm run lint --prefix frontend` |
 | Type-check and build the frontend | `npm run build --prefix frontend` |
 | Check CI for the latest push | `gh run list --limit 3` (or the repo's Actions tab) |
+| Build a release ZIP locally (uncommitted changes included) | `powershell -ExecutionPolicy Bypass -File scripts\build-bundle.ps1 -WorkingTree` |
+| Try the installer without touching your real install | Set `$env:TURTLE_DATA_DIR` to a temp folder, then run `scripts\setup.ps1 -Yes -NoStart -InstallDir <temp> -StartMenu <temp>` from an unzipped bundle |
+| Publish a release (maintainer) | Bump the version in `backend/pyproject.toml` and `backend/turtlemaxxxing/__init__.py`, run `uv lock --directory backend`, commit, then push a tag `vX.Y.Z` |
 | Develop the UI with live reload | Start the app, then `npm run dev --prefix frontend` and open http://127.0.0.1:5173 |
 
 **Definition of done for any change:** the checklist in [docs/TESTING.md §6](docs/TESTING.md#6-definition-of-done-any-change-any-author).

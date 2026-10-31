@@ -177,7 +177,7 @@ Revision requests from testing: bugs, things that work but should work different
   - Same guardrails everywhere: stay in the install folder, no admin rights, no passwords in chat.
 - **Extends:** setup prompt, start script and shortcut (M1)
 - **Privacy impact:** none
-- **Status note:** logged for later, no action now (requester). Windows is the first target by design (PLAN.md §1), so this waits until someone on macOS or Linux wants it.
+- **Status note:** logged for later, no action now (requester). Still true after M2.5: the new double-click installer, updater and checker are Windows PowerShell scripts too. Windows is the first target by design (PLAN.md §1), so this waits until someone on macOS or Linux wants it.
 - **Notes:** sized L because each OS needs its own start script and launcher, and the prompt has to be run end to end on a real machine of each kind before it's trusted. Same rule as the open M1 item for a clean Windows account.
 
 ### QA-013 Grow the "Local only" lock into an in-app security dashboard, with posture notes per section

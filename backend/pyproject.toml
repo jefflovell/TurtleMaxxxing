@@ -1,6 +1,6 @@
 [project]
 name = "turtlemaxxxing"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local-first personal assistant and project manager. Privacy first."
 license = "MIT"
 requires-python = ">=3.12"
