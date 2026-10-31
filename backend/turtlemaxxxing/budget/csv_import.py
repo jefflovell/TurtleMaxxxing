@@ -21,6 +21,7 @@ gets an import_key, and a row whose key is already in the ledger is a duplicate.
 """
 
 import csv
+import datetime as dt
 import hashlib
 import io
 import re
@@ -68,7 +69,8 @@ class Mapping:
 class Row:
     row: int
     raw: dict
-    date: date | None = None
+    # dt.date, so the field name can't shadow the type (Python 3.12 evaluates it eagerly).
+    date: dt.date | None = None
     description: str = ""
     amount_cents: int | None = None
     import_key: str | None = None

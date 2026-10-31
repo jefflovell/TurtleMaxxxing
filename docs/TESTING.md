@@ -112,6 +112,7 @@ Real examples, kept to show the process works and why the rules exist:
 | Rule dates before an account's "balance as of" date were counted on top of a balance that already included them | Manual walkthrough with demo data: the checking balance didn't match a hand calculation | `test_rule_dates_before_the_opening_balance_are_not_double_counted` |
 | In the month an account was opened, the cash-flow chart started at $0 and never showed the starting balance | Manual walkthrough: the chart's shape was wrong | `test_cashflow_shows_starting_balance_in_the_opening_month` |
 | The review inbox briefly showed "All caught up!" while still loading, even with items waiting | Manual walkthrough | Manual check only (frontend tests are a known gap, see §8) |
+| A field named `date` typed as `date` crashed the app on Python 3.12 (newer Pythons hide it) | Public CI's Python 3.12 jobs, before any user got it | The CI matrix itself (3.12 + 3.15). Rule added to `backend/AGENTS.md`. |
 | One unreadable row (a "Pending" line) made CSV date detection reject the whole file | The CSV import tests, before it shipped | `test_date_format_detection` ("one junk row doesn't sink the file") |
 
 ## 8. Known gaps (honest list)

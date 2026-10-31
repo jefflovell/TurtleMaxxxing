@@ -50,3 +50,4 @@ uv run pytest -q
 - Don't bind to `0.0.0.0` or any non-loopback address.
 - Don't add telemetry, analytics or "phone home" update checks.
 - Don't store money as floats; use integer cents.
+- Don't name a class field after its own type (`date: date | None = None`). It works on new Pythons and crashes on 3.12. Use `import datetime as dt` and `date: dt.date | None`. To check locally: `uv run --python 3.12 --isolated --with-editable . --with pytest --with httpx pytest -q`.
