@@ -1,6 +1,9 @@
 """Address settings, the port scan, and the command line."""
 
+import os
 import socket
+import subprocess
+import sys
 
 import pytest
 
@@ -71,3 +74,16 @@ def test_cli_rejects_bad_hostname():
     with pytest.raises(SystemExit) as done:
         main(["--hostname", "turtles.com"])
     assert done.value.code == 2
+
+
+@pytest.mark.parametrize("args", [["--find-port"], ["--hostname", "turtle.localhost"], ["--hostname", "turtles.com"]])
+def test_cli_output_survives_a_non_utf8_pipe(args):
+    """Regression: the installer captures this output. On Windows with Python 3.12, a
+    redirected stdout uses the old code page (cp1252), and printing a check mark
+    crashed setup with UnicodeEncodeError. Output must degrade, never crash."""
+    env = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+    done = subprocess.run(
+        [sys.executable, "-m", "turtlemaxxxing", *args], env=env, capture_output=True, timeout=60
+    )
+    assert b"UnicodeEncodeError" not in done.stderr, done.stderr.decode(errors="replace")
+    assert done.returncode == (2 if "turtles.com" in args else 0)

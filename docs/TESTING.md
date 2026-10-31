@@ -121,6 +121,7 @@ Real examples, kept to show the process works and why the rules exist:
 | In the month an account was opened, the cash-flow chart started at $0 and never showed the starting balance | Manual walkthrough: the chart's shape was wrong | `test_cashflow_shows_starting_balance_in_the_opening_month` |
 | The review inbox briefly showed "All caught up!" while still loading, even with items waiting | Manual walkthrough | Manual check only (frontend tests are a known gap, see §8) |
 | A field named `date` typed as `date` crashed the app on Python 3.12 (newer Pythons hide it) | Public CI's Python 3.12 jobs, before any user got it | The CI matrix itself (3.12 + 3.15). Rule added to `backend/AGENTS.md`. |
+| The installer stopped on Python 3.12: with its output captured, Windows used the old code page and printing "✓" crashed `--find-port` | CI's new *Installer and updater* job on its first real run (local runs used Python 3.15, which defaults to UTF-8) | `test_cli_output_survives_a_non_utf8_pipe` |
 | One unreadable row (a "Pending" line) made CSV date detection reject the whole file | The CSV import tests, before it shipped | `test_date_format_detection` ("one junk row doesn't sink the file") |
 
 ## 8. Known gaps (honest list)
