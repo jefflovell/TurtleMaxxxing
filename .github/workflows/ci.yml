@@ -78,9 +78,6 @@ jobs:
     # Windows PowerShell 5.1, the real release ZIP, a clean folder.
     name: Installer and updater (Windows)
     runs-on: windows-latest
-    env:
-      # Keep everything inside the runner's temp folder.
-      TURTLE_DATA_DIR: ${{ runner.temp }}\turtle-data
     defaults:
       run:
         shell: powershell
@@ -88,6 +85,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+
+      # Keep the app's data inside the runner's temp folder. (The runner context
+      # can't be used in a job-level env:, so it's set here for the later steps.)
+      - name: Use a temporary data folder
+        run: Add-Content -Path $env:GITHUB_ENV -Value "TURTLE_DATA_DIR=$env:RUNNER_TEMP\turtle-data" -Encoding ascii
 
       - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e # v10.3.2
         with:
