@@ -22,6 +22,10 @@ Revision requests from testing: bugs, things that work but should work different
 | QA-008 | Let people drag table column edges to change their width | ux, ui, extension | P3 | new | M | M1 | 2026-10-31 | maintainer |
 | QA-009 | Make "Check balance" and "Archive" on the Accounts table look like buttons | ui, ux | P3 | new | XS | M1 | 2026-10-31 | maintainer |
 | QA-010 | Explore automatic account updates and investment views (balances, alerts, APY, cost basis, year-over-year) | design, feature, extension, integration, auth, privacy, data | P3 | new | L | M1 | 2026-10-31 | maintainer |
+| QA-011 | Move explainer text into tooltips; keep inline explanations for the demo only | ux, ui, design | P2 | new | M | M1 | 2026-10-31 | maintainer |
+| QA-012 | The one-paste setup prompt only works on Windows | setup, docs, extension | P3 | new | L | M1 | 2026-10-31 | maintainer |
+| QA-013 | Grow the "Local only" lock into an in-app security dashboard, with posture notes per section | design, feature, ui, extension, privacy | P2 | new | L | M1 | 2026-10-31 | maintainer |
+| QA-014 | Consider a Home dashboard as the start screen instead of Plan › Today | design, ux, feature, extension | P3 | new | M | M2a | 2026-10-31 | maintainer |
 
 ## Closed
 
@@ -148,6 +152,78 @@ Revision requests from testing: bugs, things that work but should work different
   7. One opt-in connector, sandbox first (XL; split again when picked).
 - **Target:** design before M4 (Connectors). Item 1 could come sooner.
 - **Notes:** the requester's "AYPs" is read here as **APY** (annual percentage yield). Confirm when this is triaged.
+
+### QA-011 Move explainer text into tooltips; keep inline explanations for the demo only
+- **Found in:** `b09ffca`
+- **Environment:** any
+- **Actual:** every page opens with a paragraph explaining it ("Describe your paychecks, bills and subscriptions once…"), and several also end with tips or legends ("Tip: no mouse?…", the calendar's icon key, "Changing an amount affects future dates only…"). That's about 20 spots across 10 pages, always visible. Helpful the first time; clutter every day after.
+- **Expected:** a consistent explainer design:
+  - **Demo (`--demo`):** inline explanations stay, since that's where people learn the app.
+  - **Normal use:** pages are clean. Explanations move behind a small ⓘ next to the title or control, shown on hover, focus or tap.
+  - A **"Show tips"** setting to turn the inline text back on.
+  - **Kept as they are:** empty-state guidance ("No rules yet. Start with your paycheck…"), and trust and safety notes that matter at the moment you act, e.g. "the file is never saved" on Import CSV and the task editor's Private explanation. These can be shorter, not hidden.
+- **Extends:** every page's header and help text
+- **Privacy impact:** none. The app needs to know whether it's running as the demo; expose that the same way the address is (`/api/health`), and store nothing new.
+- **Notes:** tooltips must work with a keyboard and on touch screens, not just mouse hover, and be read by screen readers. Build one shared help piece and use it everywhere so it stays consistent. Sized M: a small backend flag plus every page, checked by hand.
+
+### QA-012 The one-paste setup prompt only works on Windows
+- **Found in:** `b09ffca`
+- **Environment:** macOS or Linux
+- **Actual:** `docs/SETUP_PROMPT.md` assumes Windows throughout: `winget` installs, PowerShell commands, `%LOCALAPPDATA%`, the `scripts/start-turtle.ps1` start script and the Start-menu "I like turtles" shortcut. The app itself already runs on Linux (CI tests it there), but the guided install doesn't.
+- **Expected:** the prompt detects the OS and follows matching steps:
+  - **macOS:** Homebrew installs, a shell start script, and a Dock / Spotlight launcher.
+  - **Linux:** the package manager, a shell start script, and a `.desktop` launcher.
+  - Same guardrails everywhere: stay in the install folder, no admin rights, no passwords in chat.
+- **Extends:** setup prompt, start script and shortcut (M1)
+- **Privacy impact:** none
+- **Status note:** logged for later, no action now (requester). Windows is the first target by design (PLAN.md §1), so this waits until someone on macOS or Linux wants it.
+- **Notes:** sized L because each OS needs its own start script and launcher, and the prompt has to be run end to end on a real machine of each kind before it's trusted. Same rule as the open M1 item for a clean Windows account.
+
+### QA-013 Grow the "Local only" lock into an in-app security dashboard, with posture notes per section
+- **Found in:** `b09ffca`
+- **Environment:** any
+- **Actual:** the only security signal in the app is the sidebar footer, "🔒 Local only. Your data stays on this computer." The promise is right, but you can't see *why* it's true, and every section looks equally sensitive.
+- **Expected:**
+  1. **A 🔒 Security page** (the lock links to it) that shows live checks the app can really verify about itself:
+     - The server listens only on this computer (`127.0.0.1`).
+     - The guard against other websites is on, and lists the addresses it answers to.
+     - Network connections: none, or exactly which connectors you turned on (M4).
+     - Where your data is stored, with a warning if that folder is inside OneDrive, Dropbox or another synced folder.
+     - The last automatic backup and how many backups are kept.
+     - AI access: not connected yet; from M3 on, what was shared and when (audit log), and that Private items were withheld.
+     - How many items are Private.
+     - The app version and when the self-checks last ran, with a **Run checks** button.
+  2. **The separation test (T1–T4) as an in-app checklist,** with your results saved on this computer. Today it's a document you follow by hand.
+  3. **Posture notes per section.** A small badge or ⓘ on each section explains its policy in a sentence, e.g.:
+     - **Money (accounts, rules, imports): sensitive.** "Balances and transactions stay on this computer. Imported files are never saved."
+     - **Tasks: normal.** "Shareable with your AI once you connect one, except Private items, which never are."
+  4. **Theme treatment:** the lock reflects the overall status with an icon *and* a word ("All checks passed", "1 warning"), never color alone.
+- **Extends:** the sidebar's Local-only lock (M1); SECURITY.md and the separation test (M0)
+- **Privacy impact:** review. A security page that's wrong is worse than none:
+  - It may only show green for something it **actually checked** just now. Anything unchecked says "not checked", never a default pass.
+  - The checks themselves must make no network calls (`test_privacy.py` covers the new endpoint).
+- **Design question for M3:** should Money be **off-limits to AI by default** (an opt-in per section), rather than following the same rule as tasks? The per-section notes make this visible, and the answer should be decided before AI connects.
+- **Proposed split:**
+  1. Per-section posture notes, sharing QA-011's ⓘ design (S–M).
+  2. The Security page with runtime checks and a Run checks button (L).
+  3. The separation test checklist in the app (M).
+  4. Per-section AI permissions, as part of M3.
+- **Notes:** related to QA-011 (one shared tooltip design) and QA-010 (any account connection would show up here). The automated test suite (`pytest`) stays a developer tool; the page runs its own lightweight checks instead of the test suite.
+
+### QA-014 Consider a Home dashboard as the start screen instead of Plan › Today
+- **Found in:** `b09ffca`
+- **Environment:** any
+- **Actual:** the app always opens on **☀️ Today**, which shows tasks only. Money (bills due, balances, the review inbox) means visiting other pages.
+- **Expected (to explore):** a **🏠 Home** screen that summarizes everything at a glance, with each card linking to its page:
+  - Today's and overdue tasks, with quick add (what Today shows now, condensed).
+  - Bills due in the next 7 days and anything unpaid.
+  - This month's cash-flow low point and the checking balance.
+  - Review inbox count and due reminders.
+  - Security status from QA-013 ("All checks passed").
+  - A **Start on** setting (Home / Today / Calendar / any page), remembered on this computer.
+- **Extends:** Today home screen (M2a), with cards from Money (M1) and the calendar (M2b)
+- **Privacy impact:** none for data flow, since it's all local. But money on the very first screen can be read over your shoulder, so consider a **hide amounts** toggle (show •••• until clicked), on by default for the Home screen.
+- **Notes:** "possible", per the requester. Decide during UAT whether Today stays the default. Any charts follow the project's chart rules (color-blind-safe palette, labels not color alone, table view available). Can build on existing endpoints at first (`/api/today`, `/api/calendar`, `/api/cashflow`, `/api/reviews`); add a single summary endpoint only if it's slow. Related: QA-013 (security card), QA-010 (account graph groups could become cards), QA-011 (keep cards free of explainer clutter).
 
 ---
 
