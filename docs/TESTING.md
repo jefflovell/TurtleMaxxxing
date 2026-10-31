@@ -33,6 +33,8 @@ This is a **standard operating procedure.** It applies to every change, whether 
 | **Check-ins and subscription reviews** do what they say | `tests/test_budget_api.py::test_balance_checkin_creates_adjustment`, `::test_subscription_review_keep_cancel_and_change_price` |
 | **A task is Private** if flagged Private **or** tagged with an auto-Private label, and turning auto-Private on applies to existing tasks immediately | `tests/test_tasks_api.py::test_private_flag_makes_a_task_private`, `::test_auto_private_label_makes_tagged_tasks_private`, `::test_turning_on_auto_private_applies_to_existing_tasks` |
 | **Contacts follow the same Private rule as tasks**, and a Private person on a shareable task is still marked Private | `tests/test_contacts_api.py::test_contacts_follow_the_same_private_rule_as_tasks`, `::test_tasks_list_their_people_with_each_persons_privacy` |
+| **The free installer works** on a clean Windows machine, and runs every test (privacy tests first) before finishing | CI job *Installer and updater* (`.github/workflows/ci.yml`) |
+| **A broken update never leaves you stranded:** if the new version fails its tests, the previous version is put back and restarted | CI job *Installer and updater*, step "A broken release is rolled back" |
 | **Upgrades keep your data** and back up the old database first | `tests/test_migrations.py::test_upgrade_from_v1_keeps_data_and_backs_up` |
 | **CSV import never double-counts:** importing the same or an overlapping file again changes nothing, and rows already marked paid by hand are linked, not added | `tests/test_csv_import.py::test_importing_the_same_file_twice_changes_nothing`, `::test_overlapping_files_only_add_the_new_rows`, `::test_rows_marked_paid_by_hand_are_linked_not_added_again` |
 | **CSV preview changes nothing**, and **the file itself is never stored** (rows you skip leave no trace) | `tests/test_csv_import.py::test_preview_changes_nothing`, `::test_the_file_itself_is_never_stored` |
@@ -76,11 +78,12 @@ Both must pass. Run one file with `uv run --directory backend pytest -q tests/te
 |---|---|
 | **Backend** × 4 | Windows and Linux × Python 3.12 (oldest supported) and 3.15 (newest). Installs exactly what's in `uv.lock`, runs the **privacy and security tests as their own named step** so they're easy to find, then the full suite. |
 | **Frontend** | Installs exactly what's in `package-lock.json`, then lint, type-check and build. |
+| **Installer and updater** | On a clean Windows machine with Windows PowerShell 5.1, like users have: builds the release ZIP from committed files, **installs it unattended**, checks all three shortcuts exist, starts the app and checks it answers, runs "Check my install", **updates over the running app**, then tries a deliberately broken release and checks it's **rolled back** and the app runs again. |
 | **CodeQL** | GitHub's code scanning (default setup, configured in the repo's settings rather than a workflow file). Scans the Python, TypeScript and workflow code for security bugs on every push and pull request to `main`, and weekly. Alerts appear on the repository's **Security** tab. |
 
 **CI hygiene:**
 - Third-party actions are pinned to exact commit SHAs, and Dependabot proposes updates as pull requests that go through CI first.
-- The workflow has read-only access to the repo and uses no secrets.
+- The CI workflow has read-only access to the repo and uses no secrets. The release workflow's publish job alone can write, to create a GitHub Release, using GitHub's built-in token.
 - **A red CI run blocks "done."** Don't merge or call a change finished while CI is failing.
 - **A new CodeQL alert counts as a failing test.** Fix it, or dismiss it on the Security tab with a written reason if it's a false positive. Never dismiss one silently. Agents can list open alerts with `gh api repos/jefflovell/TurtleMaxxxing/code-scanning/alerts?state=open`.
 
@@ -128,6 +131,8 @@ Real examples, kept to show the process works and why the rules exist:
 - **Board drag-and-drop** is checked manually. In-page drag events were verified in the walkthrough, but there's no automated UI test yet.
 - **Time zones:** "today" is the computer's local date. Travel across time zones isn't tested.
 - **The separation test is manual** and depends on each person's machine.
+- **Installer edge cases are manual:** winget missing, Windows' "protected your PC" warning, a real (non-temp) Start menu, and real downloads from a published release. CI covers the scripted paths; the first-user UAT covers the rest.
+- **"Check my install" has no automated proof it leaves out data.** It's written to only read file paths, versions and the health endpoint, never the database; review any change to it with that in mind.
 
 ## 9. Changing this SOP
 

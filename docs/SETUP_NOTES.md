@@ -6,6 +6,14 @@ Raw notes for building `INSTALL.md` and `SETUP_PROMPT.md`. Add an entry **whenev
 
 ---
 
+## Install paths (from M2.5)
+
+| Path | Needs | Doc |
+|---|---|---|
+| **Double-click installer** (main path) | A personal Windows 10/11 PC. The installer offers to install **uv** via winget; Python comes through uv. No Node.js, no Git, no accounts. | [INSTALL.md](INSTALL.md) |
+| One-paste Claude Code prompt (optional) | A paid Claude plan (Claude Code), plus Git, uv and Node.js (installed by Claude via winget) | [SETUP_PROMPT.md](SETUP_PROMPT.md) |
+| By hand | Git, uv, Node.js | [README](../README.md#install-by-hand-for-the-technical) |
+
 ## Target environment
 
 - **Machine:** a personal computer, never a work computer. Windows is the first target.
@@ -92,4 +100,10 @@ Not done, on purpose:
   - **M2a (tasks):** no new dependencies or setup steps. Migration 0002 adds the task tables and starter labels, and existing installs upgrade automatically with a backup first. Reminders only pop up while the app is open in a browser tab; desktop notifications come later.
   - **M2b (calendar tasks, saved filters, CSV import):** no new dependencies or setup steps. Migration 0003 adds `saved_filters` and `entries.import_key`, and existing installs upgrade automatically with a backup first. CSV files are read in memory and never saved; the user downloads them from their bank's website themselves (no bank logins). The "Bills calendar" page is now just "Calendar" (under Plan).
   - **M2c (contacts):** no new dependencies or setup steps. Migration 0004 adds `contacts`, `contact_labels` and `task_contacts`, and existing installs upgrade automatically with a backup first.
+  - **M2.5 (free setup):** Claude Code needs a paid plan, so the main install path no longer uses it.
+    - `Install TurtleMaxxxing.cmd` runs `scripts/setup.ps1`: checks for uv (offers `winget install --id astral-sh.uv`), copies the app to `%USERPROFILE%\Apps\TurtleMaxxxing` (warns about Documents, Desktop, Downloads and OneDrive), `uv sync --locked`, runs the privacy tests then the full suite, `--find-port`, an optional `--hostname`, the browser choice, and three Start-menu shortcuts (`I like turtles`, plus `TurtleMaxxxing\Update TurtleMaxxxing` and `TurtleMaxxxing\Check my TurtleMaxxxing install`).
+    - Release ZIPs (`.github/workflows/release.yml`, built by `scripts/build-bundle.ps1`) include `frontend/dist` and a `VERSION` file, so Node.js isn't needed.
+    - `scripts/update.ps1`: GitHub's latest-release API → download → SHA-256 check → stop the app → rename to `<install>.previous` → copy → `uv sync` → tests → **roll back on failure** → restart. Git installs: `git pull --ff-only`, rebuild, re-test. The updater is the only part that connects to the internet, and only when run.
+    - `scripts/check-install.ps1`: a privacy-safe report (no database reads; the user name is replaced with `<you>`), copied to the clipboard; pairs with `docs/HELP_PROMPT.md` for a free Claude chat.
+    - Verified on the dev machine with a temp data folder and Start menu: install (46 s, skipped a busy 8765), start, check, update over the running app, and rollback of a deliberately broken 9.9.9. CI repeats this on every push. **Not yet run:** a real winget install of uv, the SmartScreen prompt, a real Start menu, a download from a published release, a clean Windows account.
   - `docs/SETUP_PROMPT.md` v1 written. Prerequisites via winget (verified IDs: `Git.Git`, `astral-sh.uv`, `OpenJS.NodeJS.LTS`). Dry-run on the dev machine from a fresh clone: install, build, 63 tests, `--find-port` (correctly skipped a busy 8765), start script (start + already-running paths), shortcut creation. **Not yet run:** a real winget install, the browser-launch path, a clean Windows account.

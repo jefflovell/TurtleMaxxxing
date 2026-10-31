@@ -278,28 +278,29 @@ There's no reliable current market-share data for calendars, so this is ranked b
 *M2c, done:*
 - ✅ Contacts (e.g. "Mr. Anderson → Smith Agency"): name, organization, role, where to meet them, phone, email, notes and labels, linked to the tasks they're about, so the AI can fill in who and where (M3). Same 🔒 Private rule as tasks, and task search finds tasks by their people.
 
-**M2.5 — Setup for everyone (no paid plan needed)** 🎯 *next*
+**M2.5 — Setup for everyone (no paid plan needed)** ✅ *(built on branch `m2.5-free-setup`; first release v0.2.0)*
 
 *Why:* installing, updating and getting help all go through **Claude Code**, which needs a paid Claude plan. Charging people for an AI subscription just to install a free app breaks the pitch. Claude's [pricing page](https://claude.com/pricing) (checked 2026-10-31) shows the **Free** plan includes the desktop app, connectors and **desktop extensions**, but not Claude Code. So the app and its AI features (M3) can work on a free account; only our *install and maintenance path* has to change.
 
 *Goal:* someone with a free Claude account, or no Claude account at all, can install, run, update and troubleshoot TurtleMaxxxing. The Claude Code path stays as an optional extra for people who have it.
 
-- **Install without Claude:** a double-click installer for Windows (`Install TurtleMaxxxing.cmd`, running a `setup.ps1`) that does what the one-paste prompt does, deterministically:
+- ✅ **Install without Claude:** a double-click installer for Windows (`Install TurtleMaxxxing.cmd`, running a `setup.ps1`) that does what the one-paste prompt does, deterministically:
   - Check for and offer to install the prerequisites, asking yes/no for each one.
   - Download the app, install it and run the privacy tests.
   - Pick a free port and the friendly address, and add the "I like turtles" shortcut.
   - Same guardrails as the prompt: no admin rights, no passwords, stays in its own folder.
   - **No piping scripts from the internet into a shell.** The user downloads a release and runs it, and can read every line first.
-- **Fewer prerequisites:** GitHub Releases ship the screens already built, so **Node.js isn't needed** to install or update. A release workflow builds and attaches the ZIP. Updates download the next release, so **Git isn't needed** either. Goal: `uv` is the only prerequisite.
-- **Update without Claude:** an "Update TurtleMaxxxing" shortcut. It downloads the latest release, keeps your data (it's stored outside the install folder), re-runs the tests and restarts the app.
-- **Help without Claude Code:**
+- ✅ **Fewer prerequisites:** GitHub Releases ship the screens already built, so **Node.js isn't needed** to install or update. A release workflow builds and attaches the ZIP. Updates download the next release, so **Git isn't needed** either. Goal: `uv` is the only prerequisite.
+- ✅ **Update without Claude:** an "Update TurtleMaxxxing" shortcut. If the new version fails its tests, the previous one is put back automatically. It downloads the latest release, keeps your data (it's stored outside the install folder), re-runs the tests and restarts the app.
+- ✅ **Help without Claude Code** ([docs/HELP_PROMPT.md](docs/HELP_PROMPT.md)):
   - A **"Check my install"** script that prints a short, privacy-safe report: versions, port, whether the app answers, and test results. **No data from your database.**
   - A **free-plan help prompt** to paste into a normal Claude chat along with that report. Claude then walks you through the matching [troubleshooting guide](docs/troubleshooting/README.md), and you run each command yourself. Same guardrails: never read the data folder, never ask for passwords.
-- **Tested in public:** CI runs the installer and updater non-interactively on a clean Windows runner, so every push proves they still work.
-- **Docs:**
+- ✅ **Tested in public:** CI runs the installer and updater non-interactively on a clean Windows runner, so every push proves they still work.
+- ✅ **Docs** ([docs/INSTALL.md](docs/INSTALL.md)):
   - The README's "Get it on your computer" leads with the free path; Claude Code moves to an optional "have Claude Code?" path.
   - `SETUP_NOTES.md` and the troubleshooting guides cover both paths.
 - **For M3:** ship the MCP server as a **desktop extension** (`.mcpb`), which the Free plan supports, so quick capture works without a paid plan. Tell people plainly that free accounts have tighter usage limits.
+- ⬜ Publish the first release (tag `v0.2.0`) after merging, and run the installer from it on a clean Windows account (part of the UAT suite).
 - **Not in scope:** a single `.exe` with no prerequisites at all (packaging Python, antivirus false positives and code signing are a bigger project). Parked for later.
 
 **M3 — AI via MCP**
