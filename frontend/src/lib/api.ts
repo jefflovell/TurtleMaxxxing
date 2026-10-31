@@ -2,7 +2,7 @@
 // this same computer; the UI never contacts any other server.
 
 import type {
-  Account, Cashflow, DueReminder, FilterSpec, ImportMapping, ImportPlan, Label, LedgerEvent, Review, Rule,
+  Account, Cashflow, Contact, DueReminder, FilterSpec, ImportMapping, ImportPlan, Label, LedgerEvent, Review, Rule,
   SavedFilter, Task, TaskList, TaskStatus, TodayView,
 } from './types'
 
@@ -46,7 +46,20 @@ export interface TaskInput {
   due_time?: string | null
   private?: boolean
   label_ids?: number[]
+  contact_ids?: number[]
   reminders?: string[]
+}
+
+export interface ContactInput {
+  name: string
+  organization?: string
+  role?: string
+  email?: string
+  phone?: string
+  location?: string
+  notes?: string
+  private?: boolean
+  label_ids?: number[]
 }
 
 export interface TaskFilters {
@@ -116,6 +129,17 @@ export const api = {
   createList: (name: string, emoji?: string) => post<TaskList>('/lists', { name, emoji }),
   updateList: (id: number, body: Partial<{ name: string; emoji: string; archived: boolean }>) =>
     patch<TaskList>(`/lists/${id}`, body),
+
+  contacts: (q = '', labelIds: number[] = []) => {
+    const params = new URLSearchParams()
+    if (q) params.set('q', q)
+    labelIds.forEach((id) => params.append('label_id', String(id)))
+    return request<Contact[]>(`/contacts?${params}`)
+  },
+  contact: (id: number) => request<Contact>(`/contacts/${id}`),
+  createContact: (body: ContactInput) => post<Contact>('/contacts', body),
+  updateContact: (id: number, body: Partial<ContactInput>) => patch<Contact>(`/contacts/${id}`, body),
+  deleteContact: (id: number) => del(`/contacts/${id}`),
 
   filters: () => request<SavedFilter[]>('/filters'),
   createFilter: (name: string, filters: FilterSpec, emoji?: string) =>

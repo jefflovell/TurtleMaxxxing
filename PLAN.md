@@ -275,8 +275,8 @@ There's no reliable current market-share data for calendars, so this is ranked b
 - ✅ Saved filters pinned in the sidebar (list, statuses, labels, search and list/board view).
 - ✅ CSV import (moved from M1): matches bank or card rows to expected entries (exact amounts, or close amounts for bills that vary), adds the rest, skips anything already imported. Preview first; the file is never stored.
 
-*M2c, next:*
-- Contacts list (e.g. "Mr. Anderson → Smith Agency") so the AI can fill in who and where for appointments.
+*M2c, done:*
+- ✅ Contacts (e.g. "Mr. Anderson → Smith Agency"): name, organization, role, where to meet them, phone, email, notes and labels, linked to the tasks they're about, so the AI can fill in who and where (M3). Same 🔒 Private rule as tasks, and task search finds tasks by their people.
 
 **M3 — AI via MCP**
 - MCP server tools: read tasks, bills, calendar and contacts; *propose* new items.

@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import __version__, config, db, security
 from .budget.api import router as budget_router
+from .contacts.api import router as contacts_router
 from .tasks.api import router as tasks_router
 
 FRONTEND_DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
@@ -42,6 +43,7 @@ def create_app(
 
     app.include_router(budget_router)
     app.include_router(tasks_router)
+    app.include_router(contacts_router)
 
     if FRONTEND_DIST.is_dir():
         app.mount("/", StaticFiles(directory=FRONTEND_DIST, html=True), name="frontend")

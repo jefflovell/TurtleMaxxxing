@@ -276,3 +276,8 @@ textarea { font: inherit; color: inherit; padding: 7px 10px; border-radius: 8px;
 .table-wrap table td, .table-wrap table th { padding: 6px 10px; }
 tr.muted td { color: var(--text-3); }
 details.card > summary { cursor: pointer; font-weight: 600; }
+
+/* ------------------------------------------------------------ M2c: contacts */
+.person { white-space: nowrap; }
+.contact-name { cursor: pointer; background: none; border: 0; padding: 0; text-align: left; font-weight: 600; color: inherit; }
+.contact-name:hover { text-decoration: underline; }

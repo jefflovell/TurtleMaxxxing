@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { PageProps } from '../App'
 import EmptyState from '../components/EmptyState'
 import QuickAdd from '../components/QuickAdd'
-import { DueText, LabelChip, PrivateBadge } from '../components/TaskBits'
+import { DueText, LabelChip, PeopleChips, PrivateBadge } from '../components/TaskBits'
 import TaskEditor from '../components/TaskEditor'
 import TaskRow from '../components/TaskRow'
 import { api } from '../lib/api'
@@ -231,6 +231,7 @@ function Board({ tasks, today, onOpen, onMoved }: {
                 <div className="row" style={{ gap: 5 }}>
                   <DueText task={t} today={today} />
                   {t.labels.map((l) => <LabelChip key={l.id} label={l} />)}
+                  <PeopleChips people={t.contacts} />
                   <PrivateBadge task={t} />
                 </div>
               </article>

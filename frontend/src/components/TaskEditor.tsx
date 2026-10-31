@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { STATUSES, STATUS_META } from '../lib/tasks'
-import type { Label, Task, TaskList, TaskStatus } from '../lib/types'
-import { LabelPicker } from './TaskBits'
+import type { Contact, Label, Task, TaskList, TaskStatus } from '../lib/types'
+import { LabelPicker, PeoplePicker } from './TaskBits'
 
 interface Props {
   task: Task | null          // null = new task
@@ -24,8 +24,20 @@ export default function TaskEditor({ task, labels, lists, defaults, onClose, onS
   const [dueTime, setDueTime] = useState(start.due_time ?? '')
   const [isPrivate, setIsPrivate] = useState(start.private ?? false)
   const [labelIds, setLabelIds] = useState<number[]>((start.labels ?? []).map((l) => l.id))
+  const [contactIds, setContactIds] = useState<number[]>((start.contacts ?? []).map((c) => c.id))
+  const [contacts, setContacts] = useState<Contact[]>([])
   const [reminders, setReminders] = useState<string[]>((start.reminders ?? []).map((r) => r.remind_at))
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    api.contacts().then(setContacts).catch(() => { /* the picker just stays empty */ })
+  }, [])
+
+  async function createContact(name: string) {
+    const created = await api.createContact({ name })
+    setContacts((cs) => [...cs, created])
+    return created
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -48,6 +60,7 @@ export default function TaskEditor({ task, labels, lists, defaults, onClose, onS
       due_time: dueDate && dueTime ? dueTime : null,
       private: isPrivate,
       label_ids: labelIds,
+      contact_ids: contactIds,
       reminders: reminders.filter(Boolean),
     }
     try {
@@ -104,6 +117,11 @@ export default function TaskEditor({ task, labels, lists, defaults, onClose, onS
         <div className="stack" style={{ gap: 4 }}>
           <span className="small muted">Labels</span>
           <LabelPicker labels={labels} selected={labelIds} onChange={setLabelIds} />
+        </div>
+
+        <div className="stack" style={{ gap: 4 }}>
+          <span className="small muted">People</span>
+          <PeoplePicker contacts={contacts} selected={contactIds} onChange={setContactIds} onCreate={createContact} />
         </div>
 
         <div className="stack" style={{ gap: 6 }}>

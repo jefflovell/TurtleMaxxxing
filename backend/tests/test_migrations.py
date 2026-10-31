@@ -62,6 +62,27 @@ def test_upgrade_from_v2_keeps_tasks_and_entries(tmp_path):
     conn.close()
 
 
+def test_upgrade_from_v3_adds_contacts_and_keeps_tasks(tmp_path):
+    conn = db.connect(tmp_path / "v3.db")
+    for file in sorted(db.MIGRATIONS_DIR.glob("*.sql"))[:3]:
+        conn.executescript(file.read_text(encoding="utf-8"))
+    conn.execute("PRAGMA user_version = 3")
+    conn.execute("INSERT INTO tasks (title) VALUES ('Client meeting')")
+    work = conn.execute("SELECT id FROM labels WHERE name = 'work'").fetchone()["id"]
+    conn.execute("INSERT INTO task_labels VALUES (1, ?)", (work,))
+    conn.commit()
+
+    db.migrate(conn)
+
+    assert conn.execute("SELECT title FROM tasks").fetchone()["title"] == "Client meeting"
+    assert conn.execute("SELECT COUNT(*) FROM task_labels").fetchone()[0] == 1
+    conn.execute("INSERT INTO contacts (name) VALUES ('Mr. Anderson')")
+    conn.execute("INSERT INTO task_contacts VALUES (1, 1)")
+    conn.execute("INSERT INTO contact_labels VALUES (1, ?)", (work,))
+    assert len(list(config.backups_dir().glob("turtle-*-v3.db"))) == 1
+    conn.close()
+
+
 def test_fresh_install_needs_no_backup(tmp_path):
     conn = db.connect(tmp_path / "new.db")
     db.migrate(conn)

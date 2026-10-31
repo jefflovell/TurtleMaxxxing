@@ -249,6 +249,7 @@ class TaskIn(BaseModel):
     due_time: str | None = None
     private: bool = False
     label_ids: list[int] = []
+    contact_ids: list[int] = []
     reminders: list[str] = []
 
     @field_validator("due_time")
@@ -280,6 +281,7 @@ class TaskPatch(BaseModel):
     due_time: str | None = None
     private: bool | None = None
     label_ids: list[int] | None = None
+    contact_ids: list[int] | None = None
     reminders: list[str] | None = None
 
     @field_validator("due_time")
@@ -300,18 +302,30 @@ class MoveIn(BaseModel):
     before_id: int | None = None
 
 
-def _check_refs(conn: sqlite3.Connection, list_id: int | None, label_ids: list[int] | None) -> None:
+def _check_refs(
+    conn: sqlite3.Connection, list_id: int | None, label_ids: list[int] | None,
+    contact_ids: list[int] | None = None,
+) -> None:
     if list_id is not None and conn.execute("SELECT 1 FROM lists WHERE id = ?", (list_id,)).fetchone() is None:
         raise HTTPException(status_code=422, detail=f"list {list_id} does not exist")
     for label_id in label_ids or []:
         if conn.execute("SELECT 1 FROM labels WHERE id = ?", (label_id,)).fetchone() is None:
             raise HTTPException(status_code=422, detail=f"label {label_id} does not exist")
+    for contact_id in contact_ids or []:
+        if conn.execute("SELECT 1 FROM contacts WHERE id = ?", (contact_id,)).fetchone() is None:
+            raise HTTPException(status_code=422, detail=f"contact {contact_id} does not exist")
 
 
 def _write_labels(conn: sqlite3.Connection, task_id: int, label_ids: list[int]) -> None:
     conn.execute("DELETE FROM task_labels WHERE task_id = ?", (task_id,))
     for label_id in dict.fromkeys(label_ids):
         conn.execute("INSERT INTO task_labels (task_id, label_id) VALUES (?, ?)", (task_id, label_id))
+
+
+def _write_contacts(conn: sqlite3.Connection, task_id: int, contact_ids: list[int]) -> None:
+    conn.execute("DELETE FROM task_contacts WHERE task_id = ?", (task_id,))
+    for contact_id in dict.fromkeys(contact_ids):
+        conn.execute("INSERT INTO task_contacts (task_id, contact_id) VALUES (?, ?)", (task_id, contact_id))
 
 
 def _write_reminders(conn: sqlite3.Connection, task_id: int, reminders: list[str]) -> None:
@@ -357,7 +371,7 @@ def get_task(task_id: int, conn=Depends(get_db)):
 
 @router.post("/tasks", status_code=201)
 def create_task(body: TaskIn, conn=Depends(get_db), now=Depends(get_now)):
-    _check_refs(conn, body.list_id, body.label_ids)
+    _check_refs(conn, body.list_id, body.label_ids, body.contact_ids)
     cur = conn.execute(
         "INSERT INTO tasks (list_id, title, notes, status, blocked_note, due_date, due_time, private, "
         "position, completed_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
@@ -370,6 +384,7 @@ def create_task(body: TaskIn, conn=Depends(get_db), now=Depends(get_now)):
         ),
     )
     _write_labels(conn, cur.lastrowid, body.label_ids)
+    _write_contacts(conn, cur.lastrowid, body.contact_ids)
     _write_reminders(conn, cur.lastrowid, body.reminders)
     conn.commit()
     return service.get_task(conn, cur.lastrowid)
@@ -381,7 +396,7 @@ def update_task(task_id: int, body: TaskPatch, conn=Depends(get_db), now=Depends
     if task is None:
         raise _not_found("task")
     changes = body.model_dump(exclude_unset=True)
-    _check_refs(conn, changes.get("list_id"), changes.get("label_ids"))
+    _check_refs(conn, changes.get("list_id"), changes.get("label_ids"), changes.get("contact_ids"))
 
     due_date = changes.get("due_date", task["due_date"])
     due_time = changes.get("due_time", task["due_time"])
@@ -390,6 +405,8 @@ def update_task(task_id: int, body: TaskPatch, conn=Depends(get_db), now=Depends
 
     if "label_ids" in changes:
         _write_labels(conn, task_id, changes.pop("label_ids"))
+    if "contact_ids" in changes:
+        _write_contacts(conn, task_id, changes.pop("contact_ids") or [])
     if "reminders" in changes:
         _write_reminders(conn, task_id, changes.pop("reminders"))
     if "status" in changes:

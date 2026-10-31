@@ -63,6 +63,28 @@ def seed_tasks(conn: sqlite3.Connection, today: date, now: datetime) -> None:
         "INSERT INTO task_reminders (task_id, remind_at) VALUES (?, ?)",
         (ids["Call the plumber about the leak"], (now - timedelta(minutes=5)).isoformat(timespec="minutes")),
     )
+    # Contacts, linked to the tasks they're about.
+    people = [
+        # name, organization, role, email, phone, location, labels, tasks
+        ("Mr. Anderson", "Smith Agency", "Client contact", "anderson@example.com", "555-0100",
+         "Smith Agency, 2nd floor", ["work"], ["Review Smith St proposal", "Prep for client meeting"]),
+        ("Pat Rivera", "Leak Busters Plumbing", "Plumber", "", "555-0142",
+         "", ["home"], ["Call the plumber about the leak"]),
+        ("Sam (bakery)", "Corner Bakery", "", "", "555-0177",
+         "Corner Bakery, Main St", ["family"], ["Order the cake"]),
+        ("Jordan Lee", "Smith Agency", "Project manager", "jordan@example.com", "",
+         "", ["work", "private"], []),
+    ]
+    for name, org, role, email, phone, where, names, task_titles in people:
+        contact = conn.execute(
+            "INSERT INTO contacts (name, organization, role, email, phone, location) VALUES (?, ?, ?, ?, ?, ?)",
+            (name, org, role, email, phone, where),
+        ).lastrowid
+        for label_name in names:
+            conn.execute("INSERT INTO contact_labels VALUES (?, ?)", (contact, label[label_name]))
+        for title in task_titles:
+            conn.execute("INSERT INTO task_contacts VALUES (?, ?)", (ids[title], contact))
+
     # Saved filters pinned in the sidebar.
     for position, (name, emoji, filters) in enumerate([
         ("Fires", "🔥", {"label_ids": [label["critical"], label["urgent"]], "statuses": ["todo", "in_progress", "blocked"]}),

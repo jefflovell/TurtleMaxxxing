@@ -1,9 +1,10 @@
-"""Task logic: reading tasks with their labels, privacy, Today view, board moves
-and reminders.
+"""Task logic: reading tasks with their labels and people, privacy, Today view,
+board moves and reminders.
 
-Privacy rule (PLAN.md §3): a task is Private if it's flagged Private OR has
-any label marked auto-Private. is_private() is the single place that decides
-this. Every future AI path (M3) must filter with it.
+Privacy rule (PLAN.md §3): a task or contact is Private if it's flagged
+Private OR has any label marked auto-Private. is_private() is the single
+place that decides this, for both. Every future AI path (M3) must filter
+with it, including the people listed on a task.
 """
 
 import sqlite3
@@ -16,19 +17,49 @@ LABEL_COLORS = ("red", "orange", "yellow", "green", "aqua", "blue", "violet", "m
 DONE_VISIBLE_DAYS = 7
 
 
+# Which link table holds labels for what. Fixed names only, never user input.
+_LABEL_LINKS = {"task": ("task_labels", "task_id"), "contact": ("contact_labels", "contact_id")}
+
+
+def labels_for(conn: sqlite3.Connection, kind: str, ids: list[int]) -> dict[int, list[dict]]:
+    """Labels for each task or contact id."""
+    if not ids:
+        return {}
+    table, key = _LABEL_LINKS[kind]
+    marks = ",".join("?" * len(ids))
+    rows = conn.execute(
+        f"SELECT x.{key} AS owner, l.* FROM {table} x JOIN labels l ON l.id = x.label_id "
+        f"WHERE x.{key} IN ({marks}) ORDER BY l.position, l.name",
+        ids,
+    ).fetchall()
+    out: dict[int, list[dict]] = {}
+    for r in rows:
+        out.setdefault(r["owner"], []).append(label_out(r))
+    return out
+
+
 def labels_by_task(conn: sqlite3.Connection, task_ids: list[int]) -> dict[int, list[dict]]:
+    return labels_for(conn, "task", task_ids)
+
+
+def contacts_by_task(conn: sqlite3.Connection, task_ids: list[int]) -> dict[int, list[dict]]:
+    """The people on each task, in short form, each with its own is_private."""
     if not task_ids:
         return {}
     marks = ",".join("?" * len(task_ids))
     rows = conn.execute(
-        f"SELECT tl.task_id, l.* FROM task_labels tl JOIN labels l ON l.id = tl.label_id "
-        f"WHERE tl.task_id IN ({marks}) ORDER BY l.position, l.name",
+        f"SELECT tc.task_id, c.* FROM task_contacts tc JOIN contacts c ON c.id = tc.contact_id "
+        f"WHERE tc.task_id IN ({marks}) ORDER BY c.name COLLATE NOCASE",
         task_ids,
     ).fetchall()
+    labels = labels_for(conn, "contact", sorted({r["id"] for r in rows}))
     out: dict[int, list[dict]] = {}
     for r in rows:
-        label = label_out(r)
-        out.setdefault(r["task_id"], []).append(label)
+        out.setdefault(r["task_id"], []).append({
+            "id": r["id"], "name": r["name"], "organization": r["organization"],
+            "role": r["role"], "location": r["location"],
+            "is_private": is_private(r, labels.get(r["id"], [])),
+        })
     return out
 
 
@@ -59,15 +90,16 @@ def label_out(row: sqlite3.Row) -> dict:
     }
 
 
-def is_private(task: sqlite3.Row | dict, labels: list[dict]) -> bool:
-    """The one rule for privacy. Never bypass it."""
-    return bool(task["private"]) or any(label["auto_private"] for label in labels)
+def is_private(item: sqlite3.Row | dict, labels: list[dict]) -> bool:
+    """The one rule for privacy, for tasks and contacts alike. Never bypass it."""
+    return bool(item["private"]) or any(label["auto_private"] for label in labels)
 
 
 def tasks_out(conn: sqlite3.Connection, rows: list[sqlite3.Row]) -> list[dict]:
     ids = [r["id"] for r in rows]
     labels = labels_by_task(conn, ids)
     reminders = reminders_by_task(conn, ids)
+    people = contacts_by_task(conn, ids)
     out = []
     for r in rows:
         task_labels = labels.get(r["id"], [])
@@ -75,6 +107,7 @@ def tasks_out(conn: sqlite3.Connection, rows: list[sqlite3.Row]) -> list[dict]:
         item["private"] = bool(r["private"])
         item["labels"] = task_labels
         item["reminders"] = reminders.get(r["id"], [])
+        item["contacts"] = people.get(r["id"], [])
         item["is_private"] = is_private(r, task_labels)
         out.append(item)
     return out
@@ -117,8 +150,12 @@ def search(
         where.append("t.list_id = ?")
         args.append(list_id)
     if query:
-        where.append("(t.title LIKE ? OR t.notes LIKE ?)")
-        args += [f"%{query}%", f"%{query}%"]
+        # Also finds tasks by the people on them: "Anderson" or "Smith Agency".
+        where.append(
+            "(t.title LIKE ? OR t.notes LIKE ? OR t.id IN (SELECT tc.task_id FROM task_contacts tc "
+            "JOIN contacts c ON c.id = tc.contact_id WHERE c.name LIKE ? OR c.organization LIKE ?))"
+        )
+        args += [f"%{query}%"] * 4
     if due_from is not None:
         where.append("t.due_date >= ?")
         args.append(due_from.isoformat())

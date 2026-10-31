@@ -133,7 +133,7 @@ export default function CalendarPage({ accounts, rules, labels, lists, refresh, 
                   key={`t${t.id}`}
                   className={`pill task ${done ? 'paid' : ''} ${late ? 'late' : ''}`}
                   onClick={() => setEditing(t)}
-                  title={`${late ? 'Overdue. ' : ''}${STATUS_META[t.status].label}: ${t.title}${t.due_time ? ` at ${t.due_time}` : ''}${t.is_private ? ' (Private)' : ''}`}
+                  title={`${late ? 'Overdue. ' : ''}${STATUS_META[t.status].label}: ${t.title}${t.due_time ? ` at ${t.due_time}` : ''}${t.contacts.length ? `, with ${t.contacts.map((c) => c.name).join(', ')}` : ''}${t.is_private ? ' (Private)' : ''}`}
                 >
                   {late && <span aria-label="Overdue">⚠ </span>}<span aria-hidden>{STATUS_META[t.status].icon}</span> {t.due_time && <span className="num">{t.due_time} </span>}
                   {t.title}{t.is_private && <span aria-label="Private"> 🔒</span>}

@@ -26,6 +26,7 @@ Revision requests from testing: bugs, things that work but should work different
 | QA-012 | The one-paste setup prompt only works on Windows | setup, docs, extension | P3 | new | L | M1 | 2026-10-31 | maintainer |
 | QA-013 | Grow the "Local only" lock into an in-app security dashboard, with posture notes per section | design, feature, ui, extension, privacy | P2 | new | L | M1 | 2026-10-31 | maintainer |
 | QA-014 | Consider a Home dashboard as the start screen instead of Plan › Today | design, ux, feature, extension | P3 | new | M | M2a | 2026-10-31 | maintainer |
+| QA-015 | After an update, the browser can keep showing the old version until a hard refresh | bug, setup | P2 | new | S | M1 | 2026-10-31 | qa-agent |
 
 ## Closed
 
@@ -225,6 +226,17 @@ Revision requests from testing: bugs, things that work but should work different
 - **Privacy impact:** none for data flow, since it's all local. But money on the very first screen can be read over your shoulder, so consider a **hide amounts** toggle (show •••• until clicked), on by default for the Home screen.
 - **Notes:** "possible", per the requester. Decide during UAT whether Today stays the default. Any charts follow the project's chart rules (color-blind-safe palette, labels not color alone, table view available). Can build on existing endpoints at first (`/api/today`, `/api/calendar`, `/api/cashflow`, `/api/reviews`); add a single summary endpoint only if it's slow. Related: QA-013 (security card), QA-010 (account graph groups could become cards), QA-011 (keep cards free of explainer clutter).
 
+### QA-015 After an update, the browser can keep showing the old version until a hard refresh
+- **Found in:** M2c walkthrough (before the M2c commit)
+- **Environment:** the browser pane, after rebuilding the UI and restarting the app
+- **Severity:** minor (works after Ctrl+Shift+R)
+- **Steps:** open the app; rebuild the UI (`npm run build --prefix frontend`) and restart the app; open the address again.
+- **Actual:** the browser reused its cached copy of the page, which loaded the previous version's code. The new Contacts page was missing until the page was force-reloaded.
+- **Expected:** after an update, the next normal visit shows the new version.
+- **Extends:** serving the UI (`backend/turtlemaxxxing/app.py`), the update steps in the `turtle-help` skill
+- **Privacy impact:** none
+- **Notes:** the fix is to send `Cache-Control: no-cache` for `index.html` (and the page's other non-hashed files). The `assets/` files have content hashes in their names, so they can stay cached. Add a test that `/` comes back with `no-cache`. Until then, `docs/troubleshooting/blank-or-old-page.md` step 2 (Ctrl+Shift+R) covers it.
+
 ---
 
 ## How items are filled in
@@ -288,7 +300,7 @@ Bump one size up for anything touching money calculations or the security guard.
 | App shell, accounts, money rules and splits, auto-posting, cash flow, review inbox, setup prompt, start shortcut, friendly address, CI | M1 |
 | Tasks, labels and favorites, lists and Inbox, reminders, Today screen, list and board views, Private flag | M2a |
 | Calendar (tasks and bills), saved filters, CSV import | M2b |
-| Contacts | M2c |
+| Contacts, people on tasks | M2c |
 | AI via MCP, quick capture, AI gate, audit log, approval inbox | M3 |
 | Calendar and email connectors, Sheets export | M4 |
 | Phone access, mobile layout | M5 |

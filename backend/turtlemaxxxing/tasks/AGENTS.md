@@ -14,9 +14,9 @@ Tasks and reminders from `PLAN.md` §2b: kanban status, user-defined labels with
 
 ## 🔒 The privacy rule (most important)
 
-A task is **Private** if `tasks.private` is set **or** it has any label with `auto_private`. The single source of truth is `service.is_private()`, exposed on every task as `is_private`.
+A task is **Private** if `tasks.private` is set **or** it has any label with `auto_private`. The single source of truth is `service.is_private()`, exposed on every task as `is_private`. **Contacts use the same function** (see `contacts/AGENTS.md`), and each person listed on a task carries their own `is_private`.
 
-- **Every AI path (MCP tools in M3, in-app chat in M6) must drop tasks where `is_private` is true.** Never re-implement the rule elsewhere; call `is_private()`.
+- **Every AI path (MCP tools in M3, in-app chat in M6) must drop tasks where `is_private` is true, and drop Private people from the `contacts` list of the tasks it does share.** Never re-implement the rule elsewhere; call `is_private()`.
 - Changing a label's `auto_private` immediately changes every task carrying it.
 - Tests: `test_private_flag_makes_a_task_private`, `test_auto_private_label_makes_tagged_tasks_private`, `test_turning_on_auto_private_applies_to_existing_tasks`. Never weaken these (see `docs/TESTING.md`).
 
@@ -24,7 +24,7 @@ A task is **Private** if `tasks.private` is set **or** it has any label with `au
 
 | File | What it does |
 |---|---|
-| `service.py` | `is_private()`, `search()` (filters), `today_view()`, `set_status()` (stamps `completed_at`, clears `blocked_note`), `move()` (board drag-and-drop), `due_reminders()`. |
+| `service.py` | `is_private()`, `labels_for()` (tasks or contacts), `contacts_by_task()`, `search()` (filters; `q` also matches a task's people), `today_view()`, `set_status()` (stamps `completed_at`, clears `blocked_note`), `move()` (board drag-and-drop), `due_reminders()`. |
 | `api.py` | Endpoints: `/api/tasks`, `/api/tasks/{id}/move`, `/api/today`, `/api/labels`, `/api/lists`, `/api/filters`, `/api/reminders/...`. |
 
 ## Behaviors worth knowing

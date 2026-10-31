@@ -134,6 +134,38 @@ export interface Task {
   completed_at: string | null
   labels: Label[]
   reminders: Reminder[]
+  /** The people this task is about. Each has its own is_private. */
+  contacts: ContactSummary[]
+}
+
+// ---------------------------------------------------------------- contacts
+// Shapes from backend/turtlemaxxxing/contacts/api.py.
+
+export interface ContactSummary {
+  id: number
+  name: string
+  organization: string
+  role: string
+  location: string
+  is_private: boolean
+}
+
+export interface Contact {
+  id: number
+  name: string
+  organization: string
+  role: string
+  email: string
+  phone: string
+  location: string
+  notes: string
+  private: boolean
+  /** True if flagged Private or tagged with an auto-Private label. Never shared with AI. */
+  is_private: boolean
+  labels: Label[]
+  open_task_count: number
+  /** Only on GET /contacts/{id}. */
+  tasks?: Task[]
 }
 
 export interface TodayView {

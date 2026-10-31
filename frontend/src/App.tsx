@@ -5,6 +5,7 @@ import ReminderToasts from './components/ReminderToasts'
 import TodayPage from './pages/TodayPage'
 import TasksPage from './pages/TasksPage'
 import LabelsPage from './pages/LabelsPage'
+import ContactsPage from './pages/ContactsPage'
 import CashFlowPage from './pages/CashFlowPage'
 import CalendarPage from './pages/CalendarPage'
 import ImportPage from './pages/ImportPage'
@@ -13,7 +14,7 @@ import RulesPage from './pages/RulesPage'
 import ReviewsPage from './pages/ReviewsPage'
 
 export type Page =
-  | 'today' | 'tasks' | 'calendar' | 'labels'
+  | 'today' | 'tasks' | 'calendar' | 'contacts' | 'labels'
   | 'cashflow' | 'reviews' | 'import' | 'rules' | 'accounts'
 
 const NAV: { heading: string; items: { id: Page; label: string }[] }[] = [
@@ -23,6 +24,7 @@ const NAV: { heading: string; items: { id: Page; label: string }[] }[] = [
       { id: 'today', label: '☀️ Today' },
       { id: 'tasks', label: '✅ Tasks' },
       { id: 'calendar', label: '📅 Calendar' },
+      { id: 'contacts', label: '👤 Contacts' },
       { id: 'labels', label: '🏷️ Labels' },
     ],
   },
@@ -141,6 +143,7 @@ export default function App() {
         )}
         {page === 'today' && <TodayPage {...props} />}
         {page === 'tasks' && <TasksPage key={activeFilter ? `f${activeFilter.id}-${filterOpened}` : 'all'} {...props} />}
+        {page === 'contacts' && <ContactsPage {...props} />}
         {page === 'labels' && <LabelsPage {...props} />}
         {page === 'cashflow' && <CashFlowPage {...props} />}
         {page === 'calendar' && <CalendarPage {...props} />}

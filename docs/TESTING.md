@@ -32,6 +32,7 @@ This is a **standard operating procedure.** It applies to every change, whether 
 | **Editing a rule changes the future, never the past** | `tests/test_budget_api.py::test_rule_edits_change_the_future_not_the_past` |
 | **Check-ins and subscription reviews** do what they say | `tests/test_budget_api.py::test_balance_checkin_creates_adjustment`, `::test_subscription_review_keep_cancel_and_change_price` |
 | **A task is Private** if flagged Private **or** tagged with an auto-Private label, and turning auto-Private on applies to existing tasks immediately | `tests/test_tasks_api.py::test_private_flag_makes_a_task_private`, `::test_auto_private_label_makes_tagged_tasks_private`, `::test_turning_on_auto_private_applies_to_existing_tasks` |
+| **Contacts follow the same Private rule as tasks**, and a Private person on a shareable task is still marked Private | `tests/test_contacts_api.py::test_contacts_follow_the_same_private_rule_as_tasks`, `::test_tasks_list_their_people_with_each_persons_privacy` |
 | **Upgrades keep your data** and back up the old database first | `tests/test_migrations.py::test_upgrade_from_v1_keeps_data_and_backs_up` |
 | **CSV import never double-counts:** importing the same or an overlapping file again changes nothing, and rows already marked paid by hand are linked, not added | `tests/test_csv_import.py::test_importing_the_same_file_twice_changes_nothing`, `::test_overlapping_files_only_add_the_new_rows`, `::test_rows_marked_paid_by_hand_are_linked_not_added_again` |
 | **CSV preview changes nothing**, and **the file itself is never stored** (rows you skip leave no trace) | `tests/test_csv_import.py::test_preview_changes_nothing`, `::test_the_file_itself_is_never_stored` |
@@ -45,7 +46,7 @@ This is a **standard operating procedure.** It applies to every change, whether 
 | Layer | What | Files |
 |---|---|---|
 | **Unit** | Pure logic with no database, e.g. which dates a schedule hits, including month ends and leap years | `test_schedule.py` |
-| **End-to-end API** | The real app with a temporary database, called over HTTP. A movable `clock` fixture lets tests jump weeks ahead to watch paydays, bills and reviews happen | `test_budget_api.py`, `test_tasks_api.py`, `test_csv_import.py`, `test_demo.py` |
+| **End-to-end API** | The real app with a temporary database, called over HTTP. A movable `clock` fixture lets tests jump weeks ahead to watch paydays, bills and reviews happen | `test_budget_api.py`, `test_tasks_api.py`, `test_contacts_api.py`, `test_csv_import.py`, `test_demo.py` |
 | **Migrations** | Upgrading an older database keeps its data and backs it up first | `test_migrations.py` |
 | **Privacy and security** | The guarantees in §2: network guard, host and origin checks, data location | `test_privacy.py`, `test_local_security.py` |
 | **Config and CLI** | Settings validation, the port scan, command-line behavior | `test_config_and_cli.py` |
@@ -122,7 +123,7 @@ Real examples, kept to show the process works and why the rules exist:
 ## 8. Known gaps (honest list)
 
 - **No automated frontend tests yet.** The UI is checked by type-checking, the build, and manual walkthroughs. Planned: component tests for money input and forms.
-- **Migrations:** upgrades from v1 and v2 → current are tested. Each new migration should extend `test_migrations.py` with data that touches its tables.
+- **Migrations:** upgrades from v1, v2 and v3 → current are tested. Each new migration should extend `test_migrations.py` with data that touches its tables.
 - **CSV formats:** tested with common US layouts (one amount column, debit/credit columns, a preamble above the header, card statements with positive purchases). Other banks' layouts will turn up in real use; each one gets a fictional test case when it does.
 - **Board drag-and-drop** is checked manually. In-page drag events were verified in the walkthrough, but there's no automated UI test yet.
 - **Time zones:** "today" is the computer's local date. Travel across time zones isn't tested.

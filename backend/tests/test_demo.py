@@ -31,6 +31,19 @@ def test_demo_tasks_fill_every_part_of_the_today_view(conn):
     assert [r["task"]["title"] for r in service.due_reminders(conn, now)] == ["Call the plumber about the leak"]
 
 
+def test_demo_contacts_are_linked_and_one_is_private(conn):
+    today = date(2026, 11, 20)
+    demo.seed(conn, today, datetime(2026, 11, 20, 9, 0))
+    tasks = {t["title"]: t for t in service.search(conn, today)}
+    assert [p["name"] for p in tasks["Prep for client meeting"]["contacts"]] == ["Mr. Anderson"]
+    people = conn.execute("SELECT * FROM contacts").fetchall()
+    private = [
+        p["name"] for p in people
+        if service.is_private(p, service.labels_for(conn, "contact", [p["id"]]).get(p["id"], []))
+    ]
+    assert private == ["Jordan Lee"]
+
+
 def test_demo_saved_filters_are_valid(conn):
     from turtlemaxxxing.tasks.api import FilterSpec
 
