@@ -30,9 +30,11 @@ See `PLAN.md` for the roadmap.
 | `backend/turtlemaxxxing/tasks/` | Tasks, labels, lists, reminders, saved filters, Today view. **Owns the Private rule.** | [tasks/AGENTS.md](backend/turtlemaxxxing/tasks/AGENTS.md) |
 | `frontend/` | React + TypeScript UI (Vite) | [frontend/AGENTS.md](frontend/AGENTS.md) |
 | `docs/` | Security guide, testing SOP, setup prompt and notes, troubleshooting | — |
+| `docs/BACKLOG.md` | QA / UAT revision requests: bugs and change requests from testing, with priority, complexity and status. **Requesters by alias only.** | `.claude/skills/backlog/` |
 | `scripts/start-turtle.ps1` | What the "I like turtles" shortcut runs: starts the app if needed, then opens the browser | — |
 | `docs/troubleshooting/` | Step-by-step fixes an agent can run | [index](docs/troubleshooting/README.md) |
 | `.claude/skills/turtle-help/` | Claude Code skill: troubleshoot, change, update, undo | — |
+| `.claude/skills/backlog/` | Claude Code skill: add, triage, work on and close backlog items | — |
 
 ## Everyday commands (run from the repo root)
 

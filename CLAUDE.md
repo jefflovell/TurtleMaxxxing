@@ -18,4 +18,5 @@ A free, open-source, local-first personal assistant and project manager with a p
 
 ## Claude Code
 - The `turtle-help` skill (`.claude/skills/turtle-help/`) covers troubleshoot / change / update / undo for users.
+- The `backlog` skill (`.claude/skills/backlog/`) logs QA / UAT feedback in `docs/BACKLOG.md`. Requesters are aliases (`first-user`, `maintainer`, ...), never real names.
 - Done means the [docs/TESTING.md §6](docs/TESTING.md#6-definition-of-done-any-change-any-author) checklist is met.

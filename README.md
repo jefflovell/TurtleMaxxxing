@@ -35,6 +35,8 @@ Just looking? `uv run --directory backend turtlemaxxxing --demo` runs it with fi
 
 🧪 **Trust, but verify:** every privacy promise has a test you can run yourself. See the [testing SOP](docs/TESTING.md).
 
+Found a bug or want something changed? Tell Claude Code *"backlog: ..."* and it's added to the [QA / UAT backlog](docs/BACKLOG.md).
+
 Stuck? Open this folder in Claude Code and ask for help. The bundled `turtle-help` skill and [troubleshooting guides](docs/troubleshooting/README.md) walk you through it. For other AI agents, start with [AGENTS.md](AGENTS.md).
 
 I like turtles. 🐢

@@ -20,6 +20,7 @@ Pick the matching action below.
 1. Ask what they see, or read the error they pasted.
 2. Open the matching guide in `docs/troubleshooting/README.md` and work through its steps in order, running the commands and explaining the results.
 3. Finish with the guide's **Verify** step. If no guide fits, gather facts (`git status`, test output, the app's error), explain what you found, and propose one fix.
+4. If it turns out to be a bug in the app (not their setup), offer to log it with the `backlog` skill.
 
 ## 2. Change something safely
 1. Restate the change in one sentence and confirm it with the user.

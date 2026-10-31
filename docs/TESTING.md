@@ -50,6 +50,7 @@ This is a **standard operating procedure.** It applies to every change, whether 
 | **Privacy and security** | The guarantees in §2: network guard, host and origin checks, data location | `test_privacy.py`, `test_local_security.py` |
 | **Config and CLI** | Settings validation, the port scan, command-line behavior | `test_config_and_cli.py` |
 | **Manual walkthrough** | A person or agent uses the real UI in a browser (§5) | — |
+| **Backlog format** | `docs/BACKLOG.md` has unique IDs, known values, and aliases (never names) as requesters | `test_backlog.py` |
 | **Separation test** | A human checks the computer around the app: AI extensions, screen access, file access | [testing/SEPARATION_TEST.md](testing/SEPARATION_TEST.md) |
 | **CI** | All automated layers above, on Windows and Linux, in public, on every push | [.github/workflows/ci.yml](../.github/workflows/ci.yml) |
 
@@ -89,6 +90,7 @@ Both must pass. Run one file with `uv run --directory backend pytest -q tests/te
 4. Check **phone width** (about 375px) and **dark mode**.
 5. Open developer tools → **Network** and reload. **Every request must go to the app's own address.** Any other domain (fonts, analytics, CDNs) is a bug.
 6. Note what you checked in the commit or PR description.
+7. Anything that looks wrong but isn't fixed in the same change goes in the [QA / UAT backlog](BACKLOG.md) (requester `qa-agent` for AI walkthroughs).
 
 AI agents with a browser should do this too, and report what they saw, including anything that looked wrong.
 
