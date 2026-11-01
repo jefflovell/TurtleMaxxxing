@@ -27,6 +27,7 @@ Revision requests from testing: bugs, things that work but should work different
 | QA-013 | Grow the "Local only" lock into an in-app security dashboard, with posture notes per section | design, feature, ui, extension, privacy | P2 | new | L | M1 | 2026-10-31 | maintainer |
 | QA-014 | Consider a Home dashboard as the start screen instead of Plan › Today | design, ux, feature, extension | P3 | new | M | M2a | 2026-10-31 | maintainer |
 | QA-015 | After an update, the browser can keep showing the old version until a hard refresh | bug, setup | P2 | new | S | M1 | 2026-10-31 | qa-agent |
+| QA-016 | The release ZIP stores folder paths with backslashes, which some unzip tools mishandle | bug, setup | P3 | new | S | M2.5 | 2026-10-31 | qa-agent |
 
 ## Closed
 
@@ -236,6 +237,17 @@ Revision requests from testing: bugs, things that work but should work different
 - **Extends:** serving the UI (`backend/turtlemaxxxing/app.py`), the update steps in the `turtle-help` skill
 - **Privacy impact:** none
 - **Notes:** the fix is to send `Cache-Control: no-cache` for `index.html` (and the page's other non-hashed files). The `assets/` files have content hashes in their names, so they can stay cached. Add a test that `/` comes back with `no-cache`. Until then, `docs/troubleshooting/blank-or-old-page.md` step 2 (Ctrl+Shift+R) covers it.
+
+### QA-016 The release ZIP stores folder paths with backslashes, which some unzip tools mishandle
+- **Found in:** `5ca8d2e` (checking the published v0.2.0 release)
+- **Environment:** `TurtleMaxxxing-0.2.0.zip` from GitHub Releases, opened with something other than Windows' own unzip
+- **Severity:** minor (Windows Explorer and `Expand-Archive` unzip it correctly)
+- **Steps:** download the release ZIP; list its entries (e.g. `[IO.Compression.ZipFile]::OpenRead(...)`, 7-Zip, or `unzip -l` on macOS or Linux).
+- **Actual:** entries are named like `TurtleMaxxxing\scripts\setup.ps1`. The ZIP standard uses forward slashes, so some tools show one flat folder of files with backslashes in their names, or warn about the archive.
+- **Expected:** entries are named `TurtleMaxxxing/scripts/setup.ps1`, and the ZIP opens the same way everywhere.
+- **Extends:** release bundles (`scripts/build-bundle.ps1`), the updater (`scripts/update.ps1`, which unzips the same file)
+- **Privacy impact:** none
+- **Notes:** the cause is Windows PowerShell 5.1's `Compress-Archive` (`build-bundle.ps1` line 70), which writes `\`. The fix is to build the ZIP with .NET's `System.IO.Compression` and write each entry name with `/`. Add a check to the CI installer job (or a test) that no entry name contains `\`. Doesn't affect the first user, who is on Windows. Matters for QA-012 (macOS / Linux setup) and for anyone checking the ZIP's contents by hand. The next release after the fix replaces v0.2.0's ZIP for new downloads.
 
 ---
 
